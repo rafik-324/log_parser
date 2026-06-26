@@ -1,0 +1,13 @@
+# Maven Build-Output
+target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Secrets
+.env
+
+# OS
+.DS_Store
+Thumbs.db

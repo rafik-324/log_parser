@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: log_praser_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: log_praser
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

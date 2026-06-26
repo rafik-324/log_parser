@@ -1,0 +1,177 @@
+package parser;
+
+import dbconnection.DbConnection;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
+public class SdxpParser {
+
+    private static final DateTimeFormatter TS_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+    // Format A: (typ:sender<->empfänger)  -- schließende Klammer optional
+    private static final Pattern HEADER_PATTERN =
+            Pattern.compile("\\(([^:]+):(.+?)<->([^)(]+)\\)?");
+
+    // Richtung: genau SENDF oder RECVF
+    private static final Pattern DIRECTION_PATTERN =
+            Pattern.compile("\\b(SENDF|RECVF)\\b");
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public record LogEntry(
+            LocalDateTime timestamp,
+            String typ,
+            String sender,
+            String empfaenger,
+            String richtung,   // "SENDF" oder "RECVF"
+            JsonNode payload
+    ) {
+    }
+
+    public LogEntry parseLine(String line) {
+        if (line == null || line.isBlank()) {
+            throw new IllegalArgumentException("Leere Zeile");
+        }
+
+        // 1. Zeitstempel = alles vor dem ersten '|'
+        int firstPipe = line.indexOf('|');
+        if (firstPipe < 0) {
+            throw new IllegalArgumentException("Kein '|' gefunden: " + line);
+        }
+        LocalDateTime timestamp = LocalDateTime.parse(line.substring(0, firstPipe).trim(), TS_FORMAT);
+
+        // 2. JSON-Startposition merken (Header/Richtung liegen DAVOR)
+        int jsonStart = line.indexOf('{');
+        if (jsonStart < 0) {
+            throw new IllegalArgumentException("Kein '{' gefunden: " + line);
+        }
+        String beforeJson = line.substring(0, jsonStart);
+
+        // 3. Richtung: letztes SENDF/RECVF vor dem JSON
+        Matcher d = DIRECTION_PATTERN.matcher(beforeJson);
+        String richtung = null;
+        while (d.find()) {
+            richtung = d.group(1); // letztes Vorkommen = die echte Richtung
+        }
+        if (richtung == null) {
+            throw new IllegalArgumentException("Keine Richtung (SENDF/RECVF) gefunden: " + line);
+        }
+
+        // 4. JSON per Klammer-Zählung extrahieren (ignoriert trailing // Kommentar)
+        //    -> wird für beide Formate gebraucht (Format B holt typ/sender/empf daraus)
+        String json = extractJson(line, jsonStart);
+        JsonNode payload;
+        try {
+            payload = objectMapper.readTree(json);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("JSON nicht parsebar: " + json, e);
+        }
+
+        // 5. typ / sender / empfänger - zwei Formate:
+        String typ;
+        String sender;
+        String empfaenger;
+
+        Matcher h = HEADER_PATTERN.matcher(beforeJson);
+        if (h.find()) {
+            // Format A: Klammer-Header (typ:sender<->empfaenger) vorhanden
+            typ = h.group(1).trim();
+            sender = h.group(2).trim();
+            empfaenger = h.group(3).trim();
+        } else {
+            // Format B: kein Klammer-Header (stattdessen Thread-Name) ->
+            //           typ/sender/empfaenger aus dem JSON-Payload holen
+            JsonNode src = payload.get("src");
+            JsonNode dst = payload.get("dst");
+            if (src == null || dst == null) {
+                throw new IllegalArgumentException(
+                        "Kein Klammer-Header und kein src/dst im JSON gefunden: " + line);
+            }
+            typ = "SDXP";              // Protokollname, konsistent zu Format A
+            sender = src.asText();     // src = Absender laut JSON
+            empfaenger = dst.asText(); // dst = Empfänger laut JSON
+        }
+
+        return new LogEntry(timestamp, typ, sender, empfaenger, richtung, payload);
+    }
+
+    // Findet das erste vollständige JSON-Objekt ab 'start' per Klammer-Zählung,
+    // korrekt auch bei { } innerhalb von Strings.
+    private String extractJson(String line, int start) {
+        int depth = 0;
+        boolean inString = false, escape = false;
+        for (int i = start; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (escape) {
+                escape = false;
+                continue;
+            }
+            if (c == '\\') {
+                escape = true;
+                continue;
+            }
+            if (c == '"') {
+                inString = !inString;
+                continue;
+            }
+            if (inString) continue;
+            if (c == '{') depth++;
+            else if (c == '}' && --depth == 0) {
+                return line.substring(start, i + 1);
+            }
+        }
+        throw new IllegalArgumentException("Kein schließendes '}' gefunden: " + line);
+    }
+
+    private static final String INSERT_SQL =
+            "INSERT INTO sdxp_log (\"timestamp\", typ, sender, empfaenger, richtung, payload) " +
+                    "VALUES (?, ?, ?, ?, ?, ?::jsonb)";
+
+    public void insert(LogEntry entry) {
+        try (Connection conn = DbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
+
+            stmt.setTimestamp(1, Timestamp.valueOf(entry.timestamp()));
+            stmt.setString(2, entry.typ());
+            stmt.setString(3, entry.sender());
+            stmt.setString(4, entry.empfaenger());
+            stmt.setString(5, entry.richtung());
+            stmt.setString(6, entry.payload() != null ? entry.payload().toString() : null);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Insert in sdxp_log fehlgeschlagen: " + entry, e);
+        }
+    }
+
+    public static void main(String[] args) {
+        SdxpParser parser = new SdxpParser();
+        String testLine = """
+                2026-02-20 13:30:55.689 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1195,"et":"260220_123056.347","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/77/11","luId":"500001351387","luInfo":{"type":"C2","weight":98},"mfsTime":210,"seq":636} // SdxpSocTelegram""";
+
+        var entry = parser.parseLine(testLine);
+
+        System.out.println("Zeitstempel: " + entry.timestamp());
+        System.out.println("Typ:         " + entry.typ());
+        System.out.println("Sender:      " + entry.sender());
+        System.out.println("Empfänger:   " + entry.empfaenger());
+        System.out.println("Richtung:    " + entry.richtung());
+
+        System.out.println("Inhalt:");
+        entry.payload().fields().forEachRemaining(feld ->
+                System.out.println("  " + feld.getKey() + " = " + feld.getValue().asText())
+        );
+    }
+}
