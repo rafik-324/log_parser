@@ -48,6 +48,20 @@ CREATE TABLE tt9001_log (
 );
 
 -- =========================================================
+-- Tabelle 3: TT1434-Telegramme (Parser: TT1434Parser)
+-- payload = roher XML-Block als Text (kein Parsing, 1:1 gespeichert)
+-- =========================================================
+CREATE TABLE IF NOT EXISTS tt1434_log (
+                            id SERIAL PRIMARY KEY,
+                            "timestamp" TIMESTAMP NOT NULL,
+                            typ VARCHAR(20) NOT NULL,
+                            sender VARCHAR(50) NOT NULL,
+                            empfaenger VARCHAR(50) NOT NULL,
+                            richtung VARCHAR(5) NOT NULL,
+                            payload TEXT
+    );
+
+-- =========================================================
 -- Tabelle 4: Fehlerhafte Eintraege
 -- Speichert den kompletten Roh-Block als String, wenn Parsing
 -- oder Insert fehlschlaegt - zur spaeteren manuellen Analyse.

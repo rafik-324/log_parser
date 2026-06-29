@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>LogParser</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Inter, sans-serif;
+            background: #111217;
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .box {
+            width: 600px;
+            padding: 30px;
+            background: #181b1f;
+            border: 1px solid #2a2d35;
+            border-radius: 8px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+        }
+
+        input {
+            margin-top: 15px;
+        }
+
+        button {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            background: #73bf69;
+            border: none;
+            color: #0c1c0a;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .progress {
+            height: 10px;
+            background: #111;
+            margin-top: 15px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            width: 0%;
+            background: #73bf69;
+            transition: width 0.2s;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h1>LogParser</h1>
+    <p>Upload eine .log oder .txt Datei</p>
+
+    <input type="file" id="file" accept=".log,.txt" />
+
+    <button onclick="upload()">Upload & Parse</button>
+
+    <div class="progress">
+        <div class="bar" id="bar"></div>
+    </div>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    async function upload() {
+        const file = document.getElementById("file").files[0];
+        const bar = document.getElementById("bar");
+        const result = document.getElementById("result");
+
+        if (!file) {
+            alert("Bitte Datei auswählen");
+            return;
+        }
+
+        result.innerHTML = "Upload läuft...";
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.open("POST", "/api/parse", true);
+
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                bar.style.width = percent + "%";
+            }
+        };
+
+        xhr.onload = () => {
+            try {
+                const data = JSON.parse(xhr.responseText);
+
+                bar.style.width = "100%";
+
+                result.innerHTML = `
+        <b>Fertig</b><br><br>
+        Lines: ${data.lines}<br>
+        OK: ${data.ok}<br>
+        Fail: ${data.fail}<br>
+        Dauer: ${data.duration}s
+      `;
+            } catch (e) {
+                result.innerHTML = "Fehler beim Parsen der Antwort";
+            }
+        };
+
+        xhr.onerror = () => {
+            result.innerHTML = "Backend nicht erreichbar";
+        };
+
+        xhr.send(formData);
+    }
+</script>
+
+</body>
+</html>

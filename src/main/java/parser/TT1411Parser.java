@@ -1,18 +1,16 @@
 package parser;
 
+import com.fasterxml.jackson.databind.node.TextNode;
 import dbconnection.DbConnection;
 import parser.model.LogEntry;
-import com.fasterxml.jackson.databind.node.TextNode;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class TT1411Parser {
 
@@ -22,6 +20,7 @@ public class TT1411Parser {
     private static final Pattern DIRECTION_PATTERN =
             Pattern.compile("\\b(SENDF|RECVF)-LOGICAL\\b");
 
+    // typ(sender->empfaenger)
     private static final Pattern BODY_PATTERN =
             Pattern.compile("([^\\s(|]+)\\((.+?)->(.+?)\\)");
 
@@ -39,6 +38,8 @@ public class TT1411Parser {
         }
         LocalDateTime timestamp = LocalDateTime.parse(line.substring(0, firstPipe).trim(), TS_FORMAT);
 
+        // Nur der Teil ab SENDF/RECVF-LOGICAL wird betrachtet, egal wie viele
+        // ignorierbare Felder davor stehen.
         Matcher d = DIRECTION_PATTERN.matcher(line);
         String richtung = null;
         int directionStart = -1;
@@ -76,35 +77,48 @@ public class TT1411Parser {
             "INSERT INTO tt1411_log (\"timestamp\", typ, sender, empfaenger, richtung, payload_text) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
 
+    private static final int BATCH_SIZE = 500;
+
+    // PreparedStatement bleibt ueber mehrere insert()-Aufrufe hinweg bestehen,
+    // damit Zeilen gesammelt (addBatch) statt einzeln ausgefuehrt werden.
+    private PreparedStatement insertStmt;
+    private int batchCount = 0;
+
     public void insert(LogEntry entry) {
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
+        try {
+            if (insertStmt == null) {
+                insertStmt = DbConnection.getConnection().prepareStatement(INSERT_SQL);
+            }
+            insertStmt.setTimestamp(1, Timestamp.valueOf(entry.timestamp()));
+            insertStmt.setString(2, TextSanitizer.sanitize(entry.typ()));
+            insertStmt.setString(3, TextSanitizer.sanitize(entry.sender()));
+            insertStmt.setString(4, TextSanitizer.sanitize(entry.empfaenger()));
+            insertStmt.setString(5, TextSanitizer.sanitize(entry.richtung()));
+            insertStmt.setString(6, entry.payload() != null
+                    ? TextSanitizer.sanitize(entry.payload().asText())
+                    : null);
+            insertStmt.addBatch();
+            batchCount++;
 
-            stmt.setTimestamp(1, Timestamp.valueOf(entry.timestamp()));
-            stmt.setString(2, entry.typ());
-            stmt.setString(3, entry.sender());
-            stmt.setString(4, entry.empfaenger());
-            stmt.setString(5, entry.richtung());
-            stmt.setString(6, entry.payload() != null ? entry.payload().asText() : null);
-
-            stmt.executeUpdate();
+            if (batchCount >= BATCH_SIZE) {
+                insertStmt.executeBatch();
+                batchCount = 0;
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Insert in tt1411_log fehlgeschlagen: " + entry, e);
         }
     }
 
-    public static void main(String[] args) {
-        TT1411Parser parser = new TT1411Parser();
-        String testLine = """
-                2026-02-20 13:31:01.190 | DEBUG |  mfsBin-WaSocDaemon(NGKP2:201<->101)-436 |        | RECVF-LOGICAL: TT1411(101->201)#853401: LHD1:[PUT 100061422->R(1:1,8,R,2)|14001(SUCCESSFUL_COMPLETION)][relevantTelBlock=1] // TT1411Subtype1x2yVersion0:senderId=101|receiverId=201""";
-
-        var entry = parser.parseLine(testLine);
-
-        System.out.println("Zeitstempel: " + entry.timestamp());
-        System.out.println("Typ:         " + entry.typ());
-        System.out.println("Sender:      " + entry.sender());
-        System.out.println("Empfänger:   " + entry.empfaenger());
-        System.out.println("Richtung:    " + entry.richtung());
-        System.out.println("Payload:     " + (entry.payload() != null ? entry.payload().asText() : "kein Payload"));
+    // Schreibt alle noch gesammelten, aber noch nicht ausgefuehrten Batch-Eintraege weg.
+    // Am Ende des gesamten Laufs einmal aufrufen (aus Main, nach der Verarbeitungs-Schleife).
+    public void flush() {
+        try {
+            if (insertStmt != null && batchCount > 0) {
+                insertStmt.executeBatch();
+                batchCount = 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Flush von tt1411_log fehlgeschlagen", e);
+        }
     }
 }

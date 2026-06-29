@@ -1,6 +1,7 @@
 package parser;
 
 import dbconnection.DbConnection;
+import parser.model.LogEntry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -29,16 +29,6 @@ public class SdxpParser {
             Pattern.compile("\\b(SENDF|RECVF)\\b");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    public record LogEntry(
-            LocalDateTime timestamp,
-            String typ,
-            String sender,
-            String empfaenger,
-            String richtung,   // "SENDF" oder "RECVF"
-            JsonNode payload
-    ) {
-    }
 
     public LogEntry parseLine(String line) {
         if (line == null || line.isBlank()) {
@@ -139,20 +129,49 @@ public class SdxpParser {
             "INSERT INTO sdxp_log (\"timestamp\", typ, sender, empfaenger, richtung, payload) " +
                     "VALUES (?, ?, ?, ?, ?, ?::jsonb)";
 
+    private static final int BATCH_SIZE = 500;
+
+    private PreparedStatement insertStmt;
+    private int batchCount = 0;
+
     public void insert(LogEntry entry) {
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
+        try {
+            if (insertStmt == null) {
+                insertStmt = DbConnection.getConnection().prepareStatement(INSERT_SQL);
+            }
+            insertStmt.setTimestamp(1, Timestamp.valueOf(entry.timestamp()));
+            insertStmt.setString(2, TextSanitizer.sanitize(entry.typ()));
+            insertStmt.setString(3, TextSanitizer.sanitize(entry.sender()));
+            insertStmt.setString(4, TextSanitizer.sanitize(entry.empfaenger()));
+            insertStmt.setString(5, TextSanitizer.sanitize(entry.richtung()));
+            // Hier bewusst .toString() statt .asText(): payload ist bei SDXP ein
+            // vollstaendiger JSON-Baum, der 1:1 in die jsonb-Spalte muss - nicht
+            // nur ein einzelner Text-Wert wie bei TT1411/TT9001/TT1434.
+            insertStmt.setString(6, entry.payload() != null
+                    ? TextSanitizer.sanitize(entry.payload().toString())
+                    : null);
+            insertStmt.addBatch();
+            batchCount++;
 
-            stmt.setTimestamp(1, Timestamp.valueOf(entry.timestamp()));
-            stmt.setString(2, entry.typ());
-            stmt.setString(3, entry.sender());
-            stmt.setString(4, entry.empfaenger());
-            stmt.setString(5, entry.richtung());
-            stmt.setString(6, entry.payload() != null ? entry.payload().toString() : null);
-
-            stmt.executeUpdate();
+            if (batchCount >= BATCH_SIZE) {
+                insertStmt.executeBatch();
+                batchCount = 0;
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Insert in sdxp_log fehlgeschlagen: " + entry, e);
+        }
+    }
+
+    // Schreibt alle noch gesammelten, aber noch nicht ausgefuehrten Batch-Eintraege weg.
+    // Am Ende des gesamten Laufs einmal aufrufen (aus Main, nach der Verarbeitungs-Schleife).
+    public void flush() {
+        try {
+            if (insertStmt != null && batchCount > 0) {
+                insertStmt.executeBatch();
+                batchCount = 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Flush von sdxp_log fehlgeschlagen", e);
         }
     }
 
@@ -161,7 +180,7 @@ public class SdxpParser {
         String testLine = """
                 2026-02-20 13:30:55.689 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1195,"et":"260220_123056.347","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/77/11","luId":"500001351387","luInfo":{"type":"C2","weight":98},"mfsTime":210,"seq":636} // SdxpSocTelegram""";
 
-        var entry = parser.parseLine(testLine);
+        LogEntry entry = parser.parseLine(testLine);
 
         System.out.println("Zeitstempel: " + entry.timestamp());
         System.out.println("Typ:         " + entry.typ());
