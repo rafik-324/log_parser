@@ -9,6 +9,7 @@ CREATE TABLE sdxp_log (
                           empfaenger  VARCHAR(100) NOT NULL,
                           richtung    VARCHAR(10)  NOT NULL,
                           seq         BIGINT,
+                          ackseq      BIGINT,
                           payload     JSONB
 );
 
@@ -17,24 +18,24 @@ CREATE INDEX idx_sdxp_sender     ON sdxp_log (sender);
 CREATE INDEX idx_sdxp_empfaenger ON sdxp_log (empfaenger);
 CREATE INDEX idx_sdxp_richtung   ON sdxp_log (richtung);
 CREATE INDEX idx_sdxp_seq        ON sdxp_log (seq);
-CREATE INDEX idx_sdxp_pairing    ON sdxp_log (seq, sender, empfaenger, richtung);
+CREATE INDEX idx_sdxp_ackseq     ON sdxp_log (ackseq);
+CREATE INDEX idx_sdxp_pairing    ON sdxp_log (seq, ackseq, richtung);
 
 CREATE OR REPLACE VIEW sdxp_response_times AS
 SELECT
-    req."timestamp" AS request_ts,
-    res."timestamp" AS response_ts,
-    req.sender      AS sender,
-    req.empfaenger  AS empfaenger,
-    req.seq         AS seq,
+    req."timestamp"                                                 AS request_ts,
+    res."timestamp"                                                 AS response_ts,
+    req.sender                                                      AS sender,
+    req.empfaenger                                                  AS empfaenger,
+    req.seq                                                         AS seq,
     EXTRACT(EPOCH FROM (res."timestamp" - req."timestamp")) * 1000 AS response_ms
 FROM sdxp_log req
          JOIN sdxp_log res
-              ON req.seq        = res.seq
-                  AND req.sender     = res.empfaenger
-                  AND req.empfaenger = res.sender
+              ON  res.ackseq      = req.seq
+                  AND res.richtung    = 'RECVF'
                   AND res."timestamp" >= req."timestamp"
+                  AND res."timestamp" <  req."timestamp" + INTERVAL '30 seconds'
 WHERE req.richtung = 'SENDF'
-  AND res.richtung = 'RECVF'
   AND req.seq IS NOT NULL;
 
 -- =========================================================

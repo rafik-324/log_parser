@@ -110,8 +110,8 @@ public class SdxpParser {
     }
 
     private static final String INSERT_SQL =
-            "INSERT INTO sdxp_log (\"timestamp\", typ, sender, empfaenger, richtung, seq, payload) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?::jsonb)";
+            "INSERT INTO sdxp_log (\"timestamp\", typ, sender, empfaenger, richtung, seq, ackseq, payload) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?::jsonb)";
 
     private static final int BATCH_SIZE = 500;
 
@@ -129,7 +129,7 @@ public class SdxpParser {
             insertStmt.setString(4, TextSanitizer.sanitize(entry.empfaenger()));
             insertStmt.setString(5, TextSanitizer.sanitize(entry.richtung()));
 
-            // seq aus dem JSON extrahieren
+            // seq (swq) aus dem JSON extrahieren
             JsonNode payload = entry.payload();
             JsonNode seqNode = payload != null ? payload.get("seq") : null;
             if (seqNode != null && seqNode.isNumber()) {
@@ -138,7 +138,15 @@ public class SdxpParser {
                 insertStmt.setNull(6, Types.BIGINT);
             }
 
-            insertStmt.setString(7, payload != null
+            // ackseq aus dem JSON extrahieren
+            JsonNode ackSeqNode = payload != null ? payload.get("ackseq") : null;
+            if (ackSeqNode != null && ackSeqNode.isNumber()) {
+                insertStmt.setLong(7, ackSeqNode.asLong());
+            } else {
+                insertStmt.setNull(7, Types.BIGINT);
+            }
+
+            insertStmt.setString(8, payload != null
                     ? TextSanitizer.sanitize(payload.toString())
                     : null);
             insertStmt.addBatch();

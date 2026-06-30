@@ -43,8 +43,13 @@ public class WebServer {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
 
+            // clear=false -> an bestehende Daten anhaengen (Mehrfach-Upload).
+            // Fehlt der Parameter, wird wie bisher vorher geleert (Einzeldatei).
+            String clearParam = ctx.formParam("clear");
+            boolean clearFirst = (clearParam == null) || "true".equalsIgnoreCase(clearParam);
+
             try {
-                ProcessingResult result = LogProcessor.process(tempFile);
+                ProcessingResult result = LogProcessor.process(tempFile, clearFirst);
                 ctx.json(toJson(result));
             } catch (Exception e) {
                 System.err.println("Fehler bei der Verarbeitung des Uploads: " + e.getMessage());

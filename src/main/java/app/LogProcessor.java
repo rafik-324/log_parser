@@ -32,8 +32,16 @@ public class LogProcessor {
     private static final ErrorRepository errorRepository = new ErrorRepository();
 
     public static synchronized ProcessingResult process(Path pfad) throws IOException, SQLException {
+        // Standard: einzelne Datei -> vorher leeren (Rückwärtskompatibilität)
+        return process(pfad, true);
+    }
+
+    public static synchronized ProcessingResult process(Path pfad, boolean clearFirst)
+            throws IOException, SQLException {
         try {
-            truncateAll();
+            if (clearFirst) {
+                truncateAll();
+            }
 
             List<String> lines  = Files.readAllLines(pfad);
             List<String> blocks = splitIntoBlocks(lines);
