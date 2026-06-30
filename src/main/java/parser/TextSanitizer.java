@@ -9,7 +9,7 @@ package parser;
 public final class TextSanitizer {
 
     private TextSanitizer() {
-        // keine Instanzen nötig, nur statische Utility-Methode
+        // keine Instanzen
     }
 
     public static String sanitize(String s) {

@@ -21,9 +21,6 @@ public class TT1434Parser {
     private static final Pattern DIRECTION_PATTERN =
             Pattern.compile("\\b(SENDF|RECVF)-LOGICAL\\b");
 
-    // z.B. "TT1434(102->201)(#0) LSD[...] ... // TT1434LsdStateVersion1:..."
-    // sender/empfaenger stehen hier - anders als bei SDXP/TT9001 - direkt und
-    // eindeutig in den Klammern, eine Vertauschung je nach Richtung ist nicht nötig.
     private static final Pattern HEADER_PATTERN =
             Pattern.compile("^(\\w+)\\((\\d+)\\s*->\\s*(\\d+)\\)(.*)$", Pattern.DOTALL);
 
@@ -60,7 +57,6 @@ public class TT1434Parser {
         String typ = h.group(1).trim();
         String sender = h.group(2).trim();
         String empfaenger = h.group(3).trim();
-        // Payload behält bewusst den "(#0)"-Zaehler am Anfang, damit keine Information verloren geht
         String payloadText = h.group(4).trim();
 
         var payload = TextNode.valueOf(payloadText);
@@ -102,8 +98,6 @@ public class TT1434Parser {
         }
     }
 
-    // Schreibt alle noch gesammelten, aber noch nicht ausgefuehrten Batch-Eintraege weg.
-    // Am Ende des gesamten Laufs einmal aufrufen (aus Main, nach der Verarbeitungs-Schleife).
     public void flush() {
         try {
             if (insertStmt != null && batchCount > 0) {

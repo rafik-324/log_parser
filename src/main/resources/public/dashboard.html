@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LogParser · Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #111217;
+            color: #ccccdc;
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            width: 100%;
+            padding: clamp(20px, 3vw, 32px) clamp(20px, 4vw, 48px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(204,204,220,0.09);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: clamp(18px, 2.5vw, 24px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #f5f5f8;
+            text-decoration: none;
+        }
+
+        .breadcrumb {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: #6e6e7a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .breadcrumb span { color: #4a4a56; }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: #6e6e7a;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #73bf69;
+            box-shadow: 0 0 8px rgba(115,191,105,0.6);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 14px;
+            background: transparent;
+            color: #ccccdc;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(204,204,220,0.15);
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .back-btn:hover {
+            border-color: rgba(204,204,220,0.32);
+            background: #1f2228;
+        }
+
+        /* Toolbar unterhalb des Headers */
+        .toolbar {
+            width: 100%;
+            padding: 12px clamp(20px, 4vw, 48px);
+            border-bottom: 1px solid rgba(204,204,220,0.06);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #6e6e7a;
+            margin-right: 4px;
+        }
+
+        .panel-btn {
+            padding: 5px 12px;
+            background: #1f2228;
+            border: 1px solid rgba(204,204,220,0.12);
+            border-radius: 3px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: #8b8b96;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .panel-btn:hover, .panel-btn.active {
+            background: rgba(115,191,105,0.1);
+            border-color: rgba(115,191,105,0.35);
+            color: #73bf69;
+        }
+
+        .spacer { flex: 1; }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: transparent;
+            border: 1px solid rgba(204,204,220,0.12);
+            border-radius: 3px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: #8b8b96;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .refresh-btn:hover {
+            border-color: rgba(204,204,220,0.28);
+            color: #ccccdc;
+        }
+
+        /* Dashboard Wrapper */
+        .dashboard-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: clamp(16px, 2.5vw, 28px) clamp(20px, 4vw, 48px);
+            gap: 0;
+        }
+
+        .dashboard-frame-container {
+            flex: 1;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(204,204,220,0.09);
+            background: #181b1f;
+            position: relative;
+            min-height: calc(100vh - 180px);
+        }
+
+        iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: calc(100vh - 180px);
+            border: none;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: #181b1f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 2px solid rgba(115,191,105,0.2);
+            border-top-color: #73bf69;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        .loading-text {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: #6e6e7a;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            padding: 14px clamp(20px, 4vw, 48px);
+            border-top: 1px solid rgba(204,204,220,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .footer-info {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: #4a4a56;
+        }
+
+        .grafana-link {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: #4a4a56;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .grafana-link:hover { color: #73bf69; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <a href="/" class="logo">LogParser</a>
+        <div class="breadcrumb">
+            <span>/</span>
+            dashboard
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="status">
+            <div class="status-dot"></div>
+            Grafana verbunden · v2.4
+        </div>
+        <a href="http://localhost:8080" class="back-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"></path>
+            </svg>
+            Zurück
+        </a>
+    </div>
+</header>
+
+<div class="toolbar">
+    <span class="toolbar-label">Datei</span>
+    <span id="fileNameDisplay" style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#ccccdc;"></span>
+    <div class="spacer"></div>
+    <button class="refresh-btn" onclick="reloadFrame()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M8 16H3v5"></path>
+        </svg>
+        Neu laden
+    </button>
+</div>
+
+<div class="dashboard-wrapper">
+    <div class="dashboard-frame-container">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Dashboard wird geladen …</div>
+        </div>
+        <iframe
+                id="grafanaFrame"
+                src="http://localhost:3000/d/logpraser/lager-telegramme?orgId=1&kiosk"
+                onload="frameLoaded()"
+                title="Grafana Dashboard">
+        </iframe>
+    </div>
+</div>
+
+<footer>
+    <span class="footer-info">LogParser · Lager-Telegramme Dashboard</span>
+    <a href="http://localhost:3000" target="_blank" class="grafana-link">Grafana öffnen ↗</a>
+</footer>
+
+<script>
+    function frameLoaded() {
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.classList.add('hidden');
+    }
+
+    function reloadFrame() {
+        const frame = document.getElementById('grafanaFrame');
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.classList.remove('hidden');
+        frame.src = frame.src;
+    }
+
+    // Panel-Buttons aktiv markieren
+    function setView(view) {
+        document.querySelectorAll('.panel-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Hier kannst du später je nach View verschiedene Grafana-URLs laden
+        // z.B. mit ?var-format=SDXP als Query-Parameter wenn du Grafana-Variablen nutzt
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const fileName = params.get('file');
+    if (fileName) {
+        document.getElementById('fileNameDisplay').textContent = fileName;
+    }
+
+</script>
+
+</body>
+</html>

@@ -15,9 +15,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// Enthaelt die komplette Verarbeitungs-Logik (vormals in Main), damit sowohl
-// das CLI-Tool (Main) als auch der Webserver (WebServer) dieselbe Logik nutzen
-// koennen, statt sie zu duplizieren.
 public class LogProcessor {
 
     private static final Pattern TIMESTAMP_START_PATTERN =
@@ -35,12 +32,8 @@ public class LogProcessor {
     private static final TT1434Parser tt1434Parser = new TT1434Parser();
     private static final ErrorRepository errorRepository = new ErrorRepository();
 
-    // Nur EINE Verarbeitung gleichzeitig - reicht fuer ein lokales Ein-Personen-Tool
-    // und verhindert, dass zwei parallele Anfragen sich die gleichen statischen
-    // Parser-Instanzen (und damit dieselbe PreparedStatement/Connection) teilen.
     public static synchronized ProcessingResult process(Path pfad) throws IOException, SQLException {
-        // Jede hochgeladene Datei wird isoliert behandelt: alte Daten erst
-        // komplett raeumen, bevor die neue Datei eingelesen wird.
+
         truncateAll();
 
         List<String> lines = Files.readAllLines(pfad);
@@ -66,9 +59,6 @@ public class LogProcessor {
             }
         }
 
-        // Alle gesammelten Batches wegschreiben und genau EINMAL committen -
-        // die Verbindung bleibt offen (wichtig fuer den Webserver, der mehrere
-        // Dateien nacheinander ueber den gesamten Programmlauf hinweg verarbeitet).
         sdxpParser.flush();
         tt1411Parser.flush();
         tt9001Parser.flush();
@@ -78,10 +68,6 @@ public class LogProcessor {
         return new ProcessingResult(blocks.size(), erfolgreich, fehlgeschlagen, breakdown);
     }
 
-    // Leert alle Log-Tabellen + die Fehlertabelle in einem Schritt. Wird zu
-    // Beginn jeder Verarbeitung aufgerufen, damit immer nur die Daten der
-    // zuletzt hochgeladenen Datei in der DB stehen (kein Vermischen mehrerer
-    // Dateien, kein Anwachsen ueber die Zeit).
     private static void truncateAll() throws SQLException {
         try (Statement stmt = DbConnection.getConnection().createStatement()) {
             stmt.execute("TRUNCATE TABLE sdxp_log, tt1411_log, tt9001_log, tt1434_log, error_log");
@@ -108,8 +94,7 @@ public class LogProcessor {
         return blocks;
     }
 
-    // Wie in der alten Main.verarbeiteBlock(), gibt zusaetzlich den erkannten
-    // Typ zurueck (fuer die Format-Aufschluesselung im Ergebnis).
+
     private static String verarbeiteBlock(String block) {
         Matcher m = TYPE_DETECT_PATTERN.matcher(block);
         if (!m.find()) {

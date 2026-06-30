@@ -4,10 +4,6 @@ import dbconnection.DbConnection;
 import parser.model.LogEntry;
 import com.fasterxml.jackson.databind.node.TextNode;
 
-import dbconnection.DbConnection;
-import parser.model.LogEntry;
-import com.fasterxml.jackson.databind.node.TextNode;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
@@ -25,7 +21,6 @@ import java.sql.Timestamp;
         private static final Pattern DIRECTION_PATTERN =
                 Pattern.compile("\\b(SENDF|RECVF)-LOGICAL\\b");
 
-        // Format A: Header enthält "<->", z.B. "1<->PCX-ORDER-START-PRINTER05(9005))-473"
         private static final Pattern HEADER_PATTERN_ARROW =
                 Pattern.compile("(\\S+)\\s*<->\\s*(\\S+)");
 
@@ -56,8 +51,6 @@ import java.sql.Timestamp;
                 throw new IllegalArgumentException("Keine Richtung (SENDF/RECVF-LOGICAL) gefunden: " + firstLine);
             }
 
-            // Header-Feld ist immer das 3. Pipe-getrennte Feld (Index 2).
-            // limit=5, damit eventuelle '|' im XML-Teil danach nicht mit zerschnitten werden.
             String[] pipeFields = firstLine.split("\\|", 5);
             if (pipeFields.length < 5) {
                 throw new IllegalArgumentException("Erwarte mind. 5 durch '|' getrennte Felder: " + firstLine);
@@ -73,8 +66,6 @@ import java.sql.Timestamp;
                 eigeneKennung = h.group(1).trim();
                 fremdeKennung = h.group(2).trim();
             } else {
-                // Format B: kein "<->", stattdessen "<eigeneKennung>-<fremdeKennung...>"
-                // z.B. "DcListener-PCX-ORDER-START-PRINTER05-461"
                 int firstDash = headerField.indexOf('-');
                 if (firstDash < 0) {
                     throw new IllegalArgumentException(
@@ -168,8 +159,6 @@ import java.sql.Timestamp;
             }
         }
 
-        // Schreibt alle noch gesammelten, aber noch nicht ausgefuehrten Batch-Eintraege weg.
-        // Am Ende des gesamten Laufs einmal aufrufen (aus Main, nach der Verarbeitungs-Schleife).
         public void flush() {
             try {
                 if (insertStmt != null && batchCount > 0) {

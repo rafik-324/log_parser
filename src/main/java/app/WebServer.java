@@ -18,6 +18,19 @@ public class WebServer {
                 config.staticFiles.add("/public", Location.CLASSPATH)
         ).start(8080);
 
+        app.post("/api/clear", ctx -> {
+            try {
+                DbConnection.truncateAllTables();
+                ctx.result("OK");
+            } catch (Exception e) {
+                ctx.status(500).result(e.getMessage());
+            }
+        });
+
+        app.get("/dashboard", ctx -> {
+            ctx.html(new String(WebServer.class.getResourceAsStream("/public/dashboard.html").readAllBytes()));
+        });
+
         app.post("/api/parse", ctx -> {
             UploadedFile file = ctx.uploadedFile("file");
             if (file == null) {
@@ -41,8 +54,6 @@ public class WebServer {
             }
         });
 
-        // Sauberes Herunterfahren (z.B. bei "docker compose down"): Verbindung
-        // noch committen + schliessen, damit nichts auf der Strecke bleibt.
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 DbConnection.closeConnection();

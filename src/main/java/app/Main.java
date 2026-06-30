@@ -12,17 +12,12 @@ import java.util.regex.Pattern;
 
 public class Main {
 
-    // Erkennt den Beginn eines neuen Log-Eintrags: Zeitstempel am Zeilenanfang
     private static final Pattern TIMESTAMP_START_PATTERN =
             Pattern.compile("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}");
 
-    // Entscheidet anhand des Teils nach "SENDF-LOGICAL:"/"RECVF-LOGICAL:",
-    // welcher Telegrammtyp vorliegt - egal wie viele Zeilen der Block hat.
     private static final Pattern TYPE_DETECT_PATTERN =
             Pattern.compile("(?:SENDF|RECVF)-LOGICAL:\\s*(.*)", Pattern.DOTALL);
 
-    // Erkennt generisch TTxxxx(sender->empfaenger)(#counter) - egal welche
-    // konkrete TT-Nummer (TT1430, TT1434, ...), solange die Klammerstruktur passt.
     private static final Pattern TT1434_DETECT_PATTERN =
             Pattern.compile("^\\w+\\(\\d+\\s*->\\s*\\d+\\)\\(#\\d+\\)");
 
@@ -71,9 +66,6 @@ public class Main {
         System.out.println("Fertig. Erfolgreich: " + erfolgreich + ", Fehlgeschlagen: " + fehlgeschlagen);
     }
 
-    // Zerlegt die Datei in einzelne Log-Bloecke: ein Block beginnt bei einer
-    // Zeile mit Zeitstempel am Anfang und geht bis (exklusiv) zur naechsten
-    // solchen Zeile - egal ob der Block 1 oder mehrere Zeilen hat.
     private static List<String> splitIntoBlocks(List<String> lines) {
         List<String> blocks = new ArrayList<>();
         StringBuilder current = null;
@@ -94,9 +86,6 @@ public class Main {
         return blocks;
     }
 
-    // Erkennt den Telegrammtyp und ruft den passenden Parser + insert() auf.
-    // Unbekannte Typen werfen explizit einen Fehler statt stillschweigend
-    // in einen falschen Parser zu fallen.
     private static void verarbeiteBlock(String block) {
         Matcher m = TYPE_DETECT_PATTERN.matcher(block);
         if (!m.find()) {

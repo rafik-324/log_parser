@@ -20,11 +20,9 @@ public class SdxpParser {
     private static final DateTimeFormatter TS_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-    // Format A: (typ:sender<->empfänger)  -- schließende Klammer optional
     private static final Pattern HEADER_PATTERN =
             Pattern.compile("\\(([^:]+):(.+?)<->([^)(]+)\\)?");
 
-    // Richtung: genau SENDF oder RECVF
     private static final Pattern DIRECTION_PATTERN =
             Pattern.compile("\\b(SENDF|RECVF)\\b");
 
@@ -35,32 +33,27 @@ public class SdxpParser {
             throw new IllegalArgumentException("Leere Zeile");
         }
 
-        // 1. Zeitstempel = alles vor dem ersten '|'
         int firstPipe = line.indexOf('|');
         if (firstPipe < 0) {
             throw new IllegalArgumentException("Kein '|' gefunden: " + line);
         }
         LocalDateTime timestamp = LocalDateTime.parse(line.substring(0, firstPipe).trim(), TS_FORMAT);
 
-        // 2. JSON-Startposition merken (Header/Richtung liegen DAVOR)
         int jsonStart = line.indexOf('{');
         if (jsonStart < 0) {
             throw new IllegalArgumentException("Kein '{' gefunden: " + line);
         }
         String beforeJson = line.substring(0, jsonStart);
 
-        // 3. Richtung: letztes SENDF/RECVF vor dem JSON
         Matcher d = DIRECTION_PATTERN.matcher(beforeJson);
         String richtung = null;
         while (d.find()) {
-            richtung = d.group(1); // letztes Vorkommen = die echte Richtung
+            richtung = d.group(1);
         }
         if (richtung == null) {
             throw new IllegalArgumentException("Keine Richtung (SENDF/RECVF) gefunden: " + line);
         }
 
-        // 4. JSON per Klammer-Zählung extrahieren (ignoriert trailing // Kommentar)
-        //    -> wird für beide Formate gebraucht (Format B holt typ/sender/empf daraus)
         String json = extractJson(line, jsonStart);
         JsonNode payload;
         try {
@@ -69,36 +62,30 @@ public class SdxpParser {
             throw new IllegalArgumentException("JSON nicht parsebar: " + json, e);
         }
 
-        // 5. typ / sender / empfänger - zwei Formate:
         String typ;
         String sender;
         String empfaenger;
 
         Matcher h = HEADER_PATTERN.matcher(beforeJson);
         if (h.find()) {
-            // Format A: Klammer-Header (typ:sender<->empfaenger) vorhanden
             typ = h.group(1).trim();
             sender = h.group(2).trim();
             empfaenger = h.group(3).trim();
         } else {
-            // Format B: kein Klammer-Header (stattdessen Thread-Name) ->
-            //           typ/sender/empfaenger aus dem JSON-Payload holen
             JsonNode src = payload.get("src");
             JsonNode dst = payload.get("dst");
             if (src == null || dst == null) {
                 throw new IllegalArgumentException(
                         "Kein Klammer-Header und kein src/dst im JSON gefunden: " + line);
             }
-            typ = "SDXP";              // Protokollname, konsistent zu Format A
-            sender = src.asText();     // src = Absender laut JSON
-            empfaenger = dst.asText(); // dst = Empfänger laut JSON
+            typ = "SDXP";
+            sender = src.asText();
+            empfaenger = dst.asText();
         }
 
         return new LogEntry(timestamp, typ, sender, empfaenger, richtung, payload);
     }
 
-    // Findet das erste vollständige JSON-Objekt ab 'start' per Klammer-Zählung,
-    // korrekt auch bei { } innerhalb von Strings.
     private String extractJson(String line, int start) {
         int depth = 0;
         boolean inString = false, escape = false;
@@ -144,9 +131,6 @@ public class SdxpParser {
             insertStmt.setString(3, TextSanitizer.sanitize(entry.sender()));
             insertStmt.setString(4, TextSanitizer.sanitize(entry.empfaenger()));
             insertStmt.setString(5, TextSanitizer.sanitize(entry.richtung()));
-            // Hier bewusst .toString() statt .asText(): payload ist bei SDXP ein
-            // vollstaendiger JSON-Baum, der 1:1 in die jsonb-Spalte muss - nicht
-            // nur ein einzelner Text-Wert wie bei TT1411/TT9001/TT1434.
             insertStmt.setString(6, entry.payload() != null
                     ? TextSanitizer.sanitize(entry.payload().toString())
                     : null);
@@ -162,8 +146,6 @@ public class SdxpParser {
         }
     }
 
-    // Schreibt alle noch gesammelten, aber noch nicht ausgefuehrten Batch-Eintraege weg.
-    // Am Ende des gesamten Laufs einmal aufrufen (aus Main, nach der Verarbeitungs-Schleife).
     public void flush() {
         try {
             if (insertStmt != null && batchCount > 0) {

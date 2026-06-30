@@ -20,7 +20,6 @@ public class TT1411Parser {
     private static final Pattern DIRECTION_PATTERN =
             Pattern.compile("\\b(SENDF|RECVF)-LOGICAL\\b");
 
-    // typ(sender->empfaenger)
     private static final Pattern BODY_PATTERN =
             Pattern.compile("([^\\s(|]+)\\((.+?)->(.+?)\\)");
 
@@ -38,8 +37,6 @@ public class TT1411Parser {
         }
         LocalDateTime timestamp = LocalDateTime.parse(line.substring(0, firstPipe).trim(), TS_FORMAT);
 
-        // Nur der Teil ab SENDF/RECVF-LOGICAL wird betrachtet, egal wie viele
-        // ignorierbare Felder davor stehen.
         Matcher d = DIRECTION_PATTERN.matcher(line);
         String richtung = null;
         int directionStart = -1;
@@ -79,8 +76,6 @@ public class TT1411Parser {
 
     private static final int BATCH_SIZE = 500;
 
-    // PreparedStatement bleibt ueber mehrere insert()-Aufrufe hinweg bestehen,
-    // damit Zeilen gesammelt (addBatch) statt einzeln ausgefuehrt werden.
     private PreparedStatement insertStmt;
     private int batchCount = 0;
 
@@ -109,8 +104,6 @@ public class TT1411Parser {
         }
     }
 
-    // Schreibt alle noch gesammelten, aber noch nicht ausgefuehrten Batch-Eintraege weg.
-    // Am Ende des gesamten Laufs einmal aufrufen (aus Main, nach der Verarbeitungs-Schleife).
     public void flush() {
         try {
             if (insertStmt != null && batchCount > 0) {
