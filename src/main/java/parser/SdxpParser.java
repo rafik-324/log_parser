@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 
 public class SdxpParser {
 
@@ -27,6 +28,11 @@ public class SdxpParser {
             Pattern.compile("\\b(SENDF|RECVF)\\b");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static String normalizeId(String id) {
+        if (id == null) return null;
+        return id.replaceAll("-\\d+$", "");
+    }
 
     public LogEntry parseLine(String line) {
         if (line == null || line.isBlank()) {
@@ -68,9 +74,9 @@ public class SdxpParser {
 
         Matcher h = HEADER_PATTERN.matcher(beforeJson);
         if (h.find()) {
-            typ = h.group(1).trim();
-            sender = h.group(2).trim();
-            empfaenger = h.group(3).trim();
+            typ        = h.group(1).trim();
+            sender     = normalizeId(h.group(2).trim());
+            empfaenger = normalizeId(h.group(3).trim());
         } else {
             JsonNode src = payload.get("src");
             JsonNode dst = payload.get("dst");
@@ -78,9 +84,9 @@ public class SdxpParser {
                 throw new IllegalArgumentException(
                         "Kein Klammer-Header und kein src/dst im JSON gefunden: " + line);
             }
-            typ = "SDXP";
-            sender = src.asText();
-            empfaenger = dst.asText();
+            typ        = "SDXP";
+            sender     = normalizeId(src.asText());
+            empfaenger = normalizeId(dst.asText());
         }
 
         return new LogEntry(timestamp, typ, sender, empfaenger, richtung, payload);
@@ -91,18 +97,9 @@ public class SdxpParser {
         boolean inString = false, escape = false;
         for (int i = start; i < line.length(); i++) {
             char c = line.charAt(i);
-            if (escape) {
-                escape = false;
-                continue;
-            }
-            if (c == '\\') {
-                escape = true;
-                continue;
-            }
-            if (c == '"') {
-                inString = !inString;
-                continue;
-            }
+            if (escape) { escape = false; continue; }
+            if (c == '\\') { escape = true; continue; }
+            if (c == '"') { inString = !inString; continue; }
             if (inString) continue;
             if (c == '{') depth++;
             else if (c == '}' && --depth == 0) {
@@ -113,8 +110,8 @@ public class SdxpParser {
     }
 
     private static final String INSERT_SQL =
-            "INSERT INTO sdxp_log (\"timestamp\", typ, sender, empfaenger, richtung, payload) " +
-                    "VALUES (?, ?, ?, ?, ?, ?::jsonb)";
+            "INSERT INTO sdxp_log (\"timestamp\", typ, sender, empfaenger, richtung, seq, payload) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?::jsonb)";
 
     private static final int BATCH_SIZE = 500;
 
@@ -131,8 +128,18 @@ public class SdxpParser {
             insertStmt.setString(3, TextSanitizer.sanitize(entry.sender()));
             insertStmt.setString(4, TextSanitizer.sanitize(entry.empfaenger()));
             insertStmt.setString(5, TextSanitizer.sanitize(entry.richtung()));
-            insertStmt.setString(6, entry.payload() != null
-                    ? TextSanitizer.sanitize(entry.payload().toString())
+
+            // seq aus dem JSON extrahieren
+            JsonNode payload = entry.payload();
+            JsonNode seqNode = payload != null ? payload.get("seq") : null;
+            if (seqNode != null && seqNode.isNumber()) {
+                insertStmt.setLong(6, seqNode.asLong());
+            } else {
+                insertStmt.setNull(6, Types.BIGINT);
+            }
+
+            insertStmt.setString(7, payload != null
+                    ? TextSanitizer.sanitize(payload.toString())
                     : null);
             insertStmt.addBatch();
             batchCount++;
@@ -155,24 +162,5 @@ public class SdxpParser {
         } catch (SQLException e) {
             throw new RuntimeException("Flush von sdxp_log fehlgeschlagen", e);
         }
-    }
-
-    public static void main(String[] args) {
-        SdxpParser parser = new SdxpParser();
-        String testLine = """
-                2026-02-20 13:30:55.689 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1195,"et":"260220_123056.347","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/77/11","luId":"500001351387","luInfo":{"type":"C2","weight":98},"mfsTime":210,"seq":636} // SdxpSocTelegram""";
-
-        LogEntry entry = parser.parseLine(testLine);
-
-        System.out.println("Zeitstempel: " + entry.timestamp());
-        System.out.println("Typ:         " + entry.typ());
-        System.out.println("Sender:      " + entry.sender());
-        System.out.println("Empfänger:   " + entry.empfaenger());
-        System.out.println("Richtung:    " + entry.richtung());
-
-        System.out.println("Inhalt:");
-        entry.payload().fields().forEachRemaining(feld ->
-                System.out.println("  " + feld.getKey() + " = " + feld.getValue().asText())
-        );
     }
 }

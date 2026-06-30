@@ -21,19 +21,18 @@ public class Main {
     private static final Pattern TT1434_DETECT_PATTERN =
             Pattern.compile("^\\w+\\(\\d+\\s*->\\s*\\d+\\)\\(#\\d+\\)");
 
-    private static final SdxpParser sdxpParser = new SdxpParser();
-    private static final TT1411Parser tt1411Parser = new TT1411Parser();
-    private static final TT9001Parser tt9001Parser = new TT9001Parser();
-    private static final TT1434Parser tt1434Parser = new TT1434Parser();
+    private static final SdxpParser      sdxpParser      = new SdxpParser();
+    private static final TT14Parser      tt14Parser      = new TT14Parser();
+    private static final TT9001Parser    tt9001Parser    = new TT9001Parser();
     private static final ErrorRepository errorRepository = new ErrorRepository();
 
     public static void main(String[] args) throws IOException {
         String pfad = args.length > 0 ? args[0] : "testlog.txt";
 
-        List<String> lines = Files.readAllLines(Path.of(pfad));
+        List<String> lines  = Files.readAllLines(Path.of(pfad));
         List<String> blocks = splitIntoBlocks(lines);
 
-        int erfolgreich = 0;
+        int erfolgreich    = 0;
         int fehlgeschlagen = 0;
 
         for (String block : blocks) {
@@ -51,16 +50,14 @@ public class Main {
             }
         }
 
-        // Alle gesammelten Batches aller Parser wegschreiben.
         sdxpParser.flush();
-        tt1411Parser.flush();
+        tt14Parser.flush();
         tt9001Parser.flush();
-        tt1434Parser.flush();
 
         try {
             dbconnection.DbConnection.closeConnection();
         } catch (java.sql.SQLException e) {
-            System.err.println("Fehler beim abschliessenden Commit/Schliessen der Verbindung: " + e.getMessage());
+            System.err.println("Fehler beim Schliessen der Verbindung: " + e.getMessage());
         }
 
         System.out.println("Fertig. Erfolgreich: " + erfolgreich + ", Fehlgeschlagen: " + fehlgeschlagen);
@@ -72,17 +69,13 @@ public class Main {
 
         for (String line : lines) {
             if (TIMESTAMP_START_PATTERN.matcher(line).find()) {
-                if (current != null) {
-                    blocks.add(current.toString());
-                }
+                if (current != null) blocks.add(current.toString());
                 current = new StringBuilder(line);
             } else if (current != null) {
                 current.append('\n').append(line);
             }
         }
-        if (current != null) {
-            blocks.add(current.toString());
-        }
+        if (current != null) blocks.add(current.toString());
         return blocks;
     }
 
@@ -100,11 +93,11 @@ public class Main {
             var entry = sdxpParser.parseLine(block);
             sdxpParser.insert(entry);
         } else if (tail.startsWith("TT1411(")) {
-            var entry = tt1411Parser.parseLine(block);
-            tt1411Parser.insert(entry);
+            var entry = tt14Parser.parseLine(block, "TT1411");
+            tt14Parser.insert(entry, "TT1411");
         } else if (TT1434_DETECT_PATTERN.matcher(tail).find()) {
-            var entry = tt1434Parser.parseLine(block);
-            tt1434Parser.insert(entry);
+            var entry = tt14Parser.parseLine(block, "TT1434");
+            tt14Parser.insert(entry, "TT1434");
         } else {
             throw new IllegalArgumentException(
                     "Unbekannter Log-Typ, Block beginnt nach LOGICAL: mit: "

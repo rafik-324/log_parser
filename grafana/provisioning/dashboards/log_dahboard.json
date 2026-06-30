@@ -22,7 +22,7 @@
   "links": [],
   "panels": [
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -42,7 +42,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "red",
+            "fixedColor": "semi-dark-blue",
             "mode": "fixed"
           },
           "mappings": [],
@@ -91,7 +91,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n    (SELECT COUNT(*) FROM sdxp_log) +\r\n    (SELECT COUNT(*) FROM tt1411_log) +\r\n    (SELECT COUNT(*) FROM tt9001_log) +\r\n    (SELECT COUNT(*) FROM tt1434_log) AS gesamt_logs;",
+          "rawSql": "SELECT\r\n    (SELECT COUNT(*) FROM sdxp_log) +\r\n    (SELECT COUNT(*) FROM tt14_log) +\r\n    (SELECT COUNT(*) FROM tt9001_log) AS gesamt_logs;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -132,7 +132,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "fillOpacity": 80,
-            "gradientMode": "none",
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -172,7 +172,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "red",
+                  "fixedColor": "semi-dark-blue",
                   "mode": "fixed"
                 }
               }
@@ -218,7 +218,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT 'SDXP' AS typ, COUNT(*) AS anzahl FROM sdxp_log\r\nUNION ALL\r\nSELECT 'TT1411', COUNT(*) FROM tt1411_log\r\nUNION ALL\r\nSELECT 'TT9001', COUNT(*) FROM tt9001_log\r\nUNION ALL\r\nSELECT 'TT1434', COUNT(*) FROM tt1434_log\r\nORDER BY anzahl DESC;",
+          "rawSql": "SELECT 'SDXP'   AS typ, COUNT(*) AS anzahl FROM sdxp_log\r\nUNION ALL\r\nSELECT 'TT1411', COUNT(*) FROM tt14_log WHERE subtype = 'TT1411'\r\nUNION ALL\r\nSELECT 'TT9001', COUNT(*) FROM tt9001_log\r\nUNION ALL\r\nSELECT 'TT1434', COUNT(*) FROM tt14_log WHERE subtype = 'TT1434'\r\nORDER BY anzahl DESC;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -394,7 +394,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT 'SDXP' AS typ, COUNT(*) AS anzahl FROM sdxp_log\r\nUNION ALL\r\nSELECT 'TT1411', COUNT(*) FROM tt1411_log\r\nUNION ALL\r\nSELECT 'TT9001', COUNT(*) FROM tt9001_log\r\nUNION ALL\r\nSELECT 'TT1434', COUNT(*) FROM tt1434_log\r\nORDER BY anzahl DESC;",
+          "rawSql": "SELECT 'SDXP'   AS typ, COUNT(*) AS anzahl FROM sdxp_log\r\nUNION ALL\r\nSELECT 'TT1411', COUNT(*) FROM tt14_log WHERE subtype = 'TT1411'\r\nUNION ALL\r\nSELECT 'TT9001', COUNT(*) FROM tt9001_log\r\nUNION ALL\r\nSELECT 'TT1434', COUNT(*) FROM tt14_log WHERE subtype = 'TT1434'\r\nORDER BY anzahl DESC;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -456,7 +456,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 4,
+        "w": 6,
         "x": 0,
         "y": 10
       },
@@ -495,7 +495,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n    richtung::text AS richtung,\r\n    COUNT(*)::int AS anzahl\r\nFROM (\r\n    SELECT richtung FROM sdxp_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt1411_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt9001_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt1434_log\r\n) AS alle_telegramme\r\nGROUP BY richtung\r\nORDER BY richtung;",
+          "rawSql": "SELECT\r\n    richtung::text AS richtung,\r\n    COUNT(*)::int AS anzahl\r\nFROM (\r\n    SELECT richtung FROM sdxp_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt14_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt9001_log\r\n) AS alle_telegramme\r\nGROUP BY richtung\r\nORDER BY richtung;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -544,8 +544,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 4,
-        "x": 4,
+        "w": 6,
+        "x": 6,
         "y": 10
       },
       "id": 14,
@@ -583,7 +583,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n    richtung::text AS richtung,\r\n    COUNT(*)::int AS anzahl\r\nFROM (\r\n    SELECT richtung FROM sdxp_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt1411_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt9001_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt1434_log\r\n) AS alle_telegramme\r\nGROUP BY richtung\r\nORDER BY richtung;",
+          "rawSql": "SELECT\r\n    richtung::text AS richtung,\r\n    COUNT(*)::int AS anzahl\r\nFROM (\r\n    SELECT richtung FROM sdxp_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt14_log\r\n    UNION ALL\r\n    SELECT richtung FROM tt9001_log\r\n) AS alle_telegramme\r\nGROUP BY richtung\r\nORDER BY richtung;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -656,7 +656,7 @@
       "gridPos": {
         "h": 8,
         "w": 4,
-        "x": 8,
+        "x": 12,
         "y": 10
       },
       "id": 9,
@@ -768,7 +768,7 @@
       "gridPos": {
         "h": 8,
         "w": 4,
-        "x": 12,
+        "x": 16,
         "y": 10
       },
       "id": 10,
@@ -880,7 +880,7 @@
       "gridPos": {
         "h": 8,
         "w": 4,
-        "x": 16,
+        "x": 20,
         "y": 10
       },
       "id": 11,
@@ -915,7 +915,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n    richtung,\r\n    COUNT(*) AS anzahl\r\nFROM tt1411_log\r\nGROUP BY richtung\r\nORDER BY richtung;",
+          "rawSql": "SELECT\r\n    richtung,\r\n    COUNT(*) AS anzahl\r\nFROM tt14_log\r\nGROUP BY richtung\r\nORDER BY richtung;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -937,118 +937,6 @@
         }
       ],
       "title": "TT1411",
-      "type": "barchart"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cfqky58pk7i80d"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "light-orange",
-            "mode": "fixed"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 70,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 2,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 4,
-        "x": 20,
-        "y": 10
-      },
-      "id": 12,
-      "options": {
-        "barRadius": 0.05,
-        "barWidth": 0.69,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "orientation": "vertical",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "cfqky58pk7i80d"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n    richtung,\r\n    COUNT(*) AS anzahl\r\nFROM tt1434_log\r\nGROUP BY richtung\r\nORDER BY richtung;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "TT1434",
       "type": "barchart"
     },
     {
@@ -1266,7 +1154,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n    empfaenger,\r\n    COUNT(*) AS anzahl\r\nFROM TT1411_log\r\nGROUP BY empfaenger\r\nORDER BY anzahl DESC;",
+          "rawSql": "SELECT\r\n    empfaenger,\r\n    COUNT(*) AS anzahl\r\nFROM TT14_log\r\nGROUP BY empfaenger\r\nORDER BY anzahl DESC;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1300,7 +1188,7 @@
       },
       "id": 13,
       "panels": [],
-      "title": "Anzahl pro Steuerung in min. ",
+      "title": "Anzahl pro Typ in 0,5min. ",
       "type": "row"
     },
     {
@@ -1453,7 +1341,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n    date_trunc('minute', alle_telegramme.\"timestamp\") \r\n    + INTERVAL '30 seconds' * FLOOR(EXTRACT(SECOND FROM alle_telegramme.\"timestamp\") / 30) AS \"time\",\r\n    typ AS steuerung,\r\n    COUNT(*) AS anzahl\r\nFROM (\r\n    SELECT 'SDXP' AS typ, \"timestamp\" FROM sdxp_log\r\n    UNION ALL\r\n    SELECT 'TT1411', \"timestamp\" FROM tt1411_log\r\n    UNION ALL\r\n    SELECT 'TT9001', \"timestamp\" FROM tt9001_log\r\n    UNION ALL\r\n    SELECT 'TT1434', \"timestamp\" FROM tt1434_log\r\n) AS alle_telegramme\r\nGROUP BY \"time\", typ\r\nORDER BY \"time\";",
+          "rawSql": "SELECT\r\n    date_trunc('minute', alle_telegramme.\"timestamp\") \r\n    + INTERVAL '30 seconds' * FLOOR(EXTRACT(SECOND FROM alle_telegramme.\"timestamp\") / 30) AS \"time\",\r\n    typ AS steuerung,\r\n    COUNT(*) AS anzahl\r\nFROM (\r\n    SELECT 'SDXP'  AS typ, \"timestamp\" FROM sdxp_log\r\n    UNION ALL\r\n    SELECT 'TT14',          \"timestamp\" FROM tt14_log\r\n    UNION ALL\r\n    SELECT 'TT9001',        \"timestamp\" FROM tt9001_log\r\n) AS alle_telegramme\r\nGROUP BY \"time\", typ\r\nORDER BY \"time\";",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1475,196 +1363,572 @@
         }
       ],
       "title": "Anzahl Steuerungen",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "anzahl(.*)",
+            "renamePattern": "$1"
+          }
+        }
+      ],
       "type": "timeseries"
     },
     {
-      "collapsed": false,
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "cfqky58pk7i80d"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl SDXP"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl TT9001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl TT1411"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl TT1434"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cfqky58pk7i80d"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  date_trunc('minute', \"timestamp\") + INTERVAL '30 seconds' * FLOOR(\r\n    EXTRACT(\r\n      SECOND\r\n      FROM\r\n        \"timestamp\"\r\n    ) / 30\r\n  ) AS \"time\",\r\n  steuerung,\r\n  COUNT(*) AS count\r\nFROM\r\n  (\r\n    SELECT\r\n      \"timestamp\",\r\n      sender AS steuerung\r\n    FROM\r\n      sdxp_log\r\n    UNION\r\n    ALL\r\n    SELECT\r\n      \"timestamp\",\r\n      empfaenger AS steuerung\r\n    FROM\r\n      sdxp_log\r\n  ) AS alle\r\nWHERE\r\n  steuerung != 'MFS'\r\nGROUP BY\r\n  \"time\",\r\n  steuerung\r\nORDER BY\r\n  \"time\";",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Anzahl SDXP Steuerungen",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "count(.*)",
+            "renamePattern": "$1"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "cfqky58pk7i80d"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl SDXP"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl TT9001"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl TT1411"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anzahl TT1434"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cfqky58pk7i80d"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n    date_trunc('minute', \"timestamp\")\r\n    + INTERVAL '30 seconds' * FLOOR(EXTRACT(SECOND FROM \"timestamp\") / 30) AS \"time\",\r\n    steuerung,\r\n    COUNT(*) AS count\r\nFROM (\r\n    SELECT \"timestamp\", sender     AS steuerung FROM tt14_log\r\n    UNION ALL\r\n    SELECT \"timestamp\", empfaenger AS steuerung FROM tt14_log\r\n) AS alle\r\nWHERE steuerung != 'MFS'\r\nGROUP BY \"time\", steuerung\r\nORDER BY \"time\";",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Anzahl TT14 Steuerungen",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "count(.*)",
+            "renamePattern": "$1"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 45
       },
       "id": 18,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cfqky58pk7i80d"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 250,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "super-light-blue",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 80
+                  },
+                  {
+                    "color": "semi-dark-red",
+                    "value": 125
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 0,
+            "y": 46
+          },
+          "id": 19,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto"
+          },
+          "pluginVersion": "11.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfqky58pk7i80d"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT COUNT(*) AS fehler_anzahl\r\nFROM error_log;",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Anz. Fehlerhaft",
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cfqky58pk7i80d"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 20,
+            "x": 4,
+            "y": 46
+          },
+          "id": 20,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "11.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfqky58pk7i80d"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT * FROM error_log;",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Fehlerhaft",
+          "type": "table"
+        }
+      ],
       "title": "Error",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cfqky58pk7i80d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "max": 250,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 80
-              },
-              {
-                "color": "red",
-                "value": 125
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 0,
-        "y": 37
-      },
-      "id": 19,
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "cfqky58pk7i80d"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(*) AS fehler_anzahl\r\nFROM error_log;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Anz. Fehlerhaft",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cfqky58pk7i80d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 20,
-        "x": 4,
-        "y": 37
-      },
-      "id": 20,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "cfqky58pk7i80d"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT * FROM error_log;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Fehlerhaft",
-      "type": "table"
     }
   ],
   "refresh": "",
@@ -1682,6 +1946,6 @@
   "timezone": "browser",
   "title": "New dashboard",
   "uid": "logpraser",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

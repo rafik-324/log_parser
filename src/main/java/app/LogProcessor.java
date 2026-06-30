@@ -26,51 +26,54 @@ public class LogProcessor {
     private static final Pattern TT1434_DETECT_PATTERN =
             Pattern.compile("^\\w+\\(\\d+\\s*->\\s*\\d+\\)\\(#\\d+\\)");
 
-    private static final SdxpParser sdxpParser = new SdxpParser();
-    private static final TT1411Parser tt1411Parser = new TT1411Parser();
-    private static final TT9001Parser tt9001Parser = new TT9001Parser();
-    private static final TT1434Parser tt1434Parser = new TT1434Parser();
+    private static final SdxpParser      sdxpParser      = new SdxpParser();
+    private static final TT14Parser      tt14Parser      = new TT14Parser();
+    private static final TT9001Parser    tt9001Parser    = new TT9001Parser();
     private static final ErrorRepository errorRepository = new ErrorRepository();
 
     public static synchronized ProcessingResult process(Path pfad) throws IOException, SQLException {
+        try {
+            truncateAll();
 
-        truncateAll();
+            List<String> lines  = Files.readAllLines(pfad);
+            List<String> blocks = splitIntoBlocks(lines);
 
-        List<String> lines = Files.readAllLines(pfad);
-        List<String> blocks = splitIntoBlocks(lines);
+            int erfolgreich    = 0;
+            int fehlgeschlagen = 0;
+            Map<String, Integer> breakdown = new LinkedHashMap<>();
 
-        int erfolgreich = 0;
-        int fehlgeschlagen = 0;
-        Map<String, Integer> breakdown = new LinkedHashMap<>();
-
-        for (String block : blocks) {
-            try {
-                String typ = verarbeiteBlock(block);
-                erfolgreich++;
-                breakdown.merge(typ, 1, Integer::sum);
-            } catch (Exception e) {
-                fehlgeschlagen++;
-                String fehlertext = e.getMessage();
-                if (e.getCause() != null) {
-                    fehlertext += " | Ursache: " + e.getCause().getMessage();
+            for (String block : blocks) {
+                try {
+                    String typ = verarbeiteBlock(block);
+                    erfolgreich++;
+                    breakdown.merge(typ, 1, Integer::sum);
+                } catch (Exception e) {
+                    fehlgeschlagen++;
+                    String fehlertext = e.getMessage();
+                    if (e.getCause() != null) {
+                        fehlertext += " | Ursache: " + e.getCause().getMessage();
+                    }
+                    System.err.println("Fehler beim Verarbeiten eines Blocks: " + fehlertext);
+                    errorRepository.insertError(block, fehlertext);
                 }
-                System.err.println("Fehler beim Verarbeiten eines Blocks: " + fehlertext);
-                errorRepository.insertError(block, fehlertext);
             }
+
+            sdxpParser.flush();
+            tt14Parser.flush();
+            tt9001Parser.flush();
+            DbConnection.commit();
+
+            return new ProcessingResult(blocks.size(), erfolgreich, fehlgeschlagen, breakdown);
+
+        } catch (Exception e) {
+            DbConnection.rollback();
+            throw e;
         }
-
-        sdxpParser.flush();
-        tt1411Parser.flush();
-        tt9001Parser.flush();
-        tt1434Parser.flush();
-        DbConnection.commit();
-
-        return new ProcessingResult(blocks.size(), erfolgreich, fehlgeschlagen, breakdown);
     }
 
     private static void truncateAll() throws SQLException {
         try (Statement stmt = DbConnection.getConnection().createStatement()) {
-            stmt.execute("TRUNCATE TABLE sdxp_log, tt1411_log, tt9001_log, tt1434_log, error_log");
+            stmt.execute("TRUNCATE TABLE sdxp_log, tt14_log, tt9001_log, error_log");
         }
     }
 
@@ -80,20 +83,15 @@ public class LogProcessor {
 
         for (String line : lines) {
             if (TIMESTAMP_START_PATTERN.matcher(line).find()) {
-                if (current != null) {
-                    blocks.add(current.toString());
-                }
+                if (current != null) blocks.add(current.toString());
                 current = new StringBuilder(line);
             } else if (current != null) {
                 current.append('\n').append(line);
             }
         }
-        if (current != null) {
-            blocks.add(current.toString());
-        }
+        if (current != null) blocks.add(current.toString());
         return blocks;
     }
-
 
     private static String verarbeiteBlock(String block) {
         Matcher m = TYPE_DETECT_PATTERN.matcher(block);
@@ -111,12 +109,12 @@ public class LogProcessor {
             sdxpParser.insert(entry);
             return "SDXP";
         } else if (tail.startsWith("TT1411(")) {
-            var entry = tt1411Parser.parseLine(block);
-            tt1411Parser.insert(entry);
+            var entry = tt14Parser.parseLine(block, "TT1411");
+            tt14Parser.insert(entry, "TT1411");
             return "TT1411";
         } else if (TT1434_DETECT_PATTERN.matcher(tail).find()) {
-            var entry = tt1434Parser.parseLine(block);
-            tt1434Parser.insert(entry);
+            var entry = tt14Parser.parseLine(block, "TT1434");
+            tt14Parser.insert(entry, "TT1434");
             return "TT1434";
         } else {
             throw new IllegalArgumentException(

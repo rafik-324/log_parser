@@ -161,23 +161,45 @@
 
       componentDidMount() {
         fetch('/api/clear', { method: 'POST' });
-        }
+      }
 
       fileInput = React.createRef();
 
       pick = () => { if (this.fileInput.current) this.fileInput.current.click(); };
 
+      // ── Dateiformat-Prüfung ──────────────────────────────────────────
+      isValidFile(file) {
+        const name = (file.name || '').toLowerCase();
+        return name.endsWith('.txt') || name.endsWith('.log');
+      }
+      // ─────────────────────────────────────────────────────────────────
+
       onDragOver = (e) => { e.preventDefault(); if (!this.state.dragOver) this.setState({ dragOver: true }); };
       onDragLeave = (e) => { e.preventDefault(); this.setState({ dragOver: false }); };
+
       onDrop = (e) => {
         e.preventDefault();
         this.setState({ dragOver: false });
         const f = e.dataTransfer.files && e.dataTransfer.files[0];
-        if (f) this.start(f);
+        if (f) {
+          if (!this.isValidFile(f)) {
+            alert('Ungültiges Format: "' + f.name + '"\nNur .txt und .log Dateien sind erlaubt.');
+            return;
+          }
+          this.start(f);
+        }
       };
+
       onFileChange = (e) => {
         const f = e.target.files && e.target.files[0];
-        if (f) this.start(f);
+        if (f) {
+          if (!this.isValidFile(f)) {
+            alert('Ungültiges Format: "' + f.name + '"\nNur .txt und .log Dateien sind erlaubt.');
+            e.target.value = '';
+            return;
+          }
+          this.start(f);
+        }
       };
 
       fmtBytes(b) {
