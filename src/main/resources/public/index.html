@@ -33,11 +33,8 @@
             </div>
         </header>
 
-        <main style="width: 100%; max-width: 920px;">
+        <main style="width: 100%; max-width: 920px; flex: 1;">
 
-            <!-- ════════════════════════════════════════════════════════════ -->
-            <!-- PHASE 1: AUSWAHL (mehrere Dateien)                            -->
-            <!-- ════════════════════════════════════════════════════════════ -->
             <sc-if value="{{ isSelect }}" hint-placeholder-val="{{ true }}">
 
                 <!-- Drop-Zone -->
@@ -62,7 +59,6 @@
                     </div>
                 </section>
 
-                <!-- Ausgewählte Dateien -->
                 <sc-if value="{{ hasFiles }}" hint-placeholder-val="{{ false }}">
                     <section style="margin-top: 18px; animation: lp-pop 0.25s ease;">
                         <div style="background: #181b1f; border: 1px solid rgba(204,204,220,0.09); border-radius: 3px; overflow: hidden;">
@@ -82,7 +78,6 @@
                             </sc-for>
                         </div>
 
-                        <!-- create dashboard -->
                         <div style="display: flex; gap: 12px; margin-top: 18px;">
                             <button onClick="{{ startRun }}" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; background: #73bf69; color: #0c1c0a; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; border: none; border-radius: 3px; cursor: pointer;" style-hover="background:#84cf78;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0c1c0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
@@ -111,12 +106,10 @@
                     <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #73bf69;">{{ progressStr }}</span>
                 </div>
 
-                <!-- ein Block pro Datei, untereinander -->
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <sc-for list="{{ jobViews }}" as="job" hint-placeholder-count="0">
                         <section style="background: #181b1f; border: 1px solid rgba(204,204,220,0.09); border-radius: 3px; overflow: hidden;">
 
-                            <!-- ── PENDING ── -->
                             <sc-if value="{{ job.isPending }}" hint-placeholder-val="{{ false }}">
                                 <div style="display: flex; align-items: center; gap: 12px; padding: 18px 24px; opacity: 0.55;">
                                     <div style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(204,204,220,0.18); display: flex; align-items: center; justify-content: center;">
@@ -129,7 +122,6 @@
                                 </div>
                             </sc-if>
 
-                            <!-- ── PROCESSING ── -->
                             <sc-if value="{{ job.isProcessing }}" hint-placeholder-val="{{ false }}">
                                 <div style="display: flex; align-items: center; gap: 12px; padding: 18px 24px;">
                                     <div style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(115,191,105,0.2); border-top-color: #73bf69; animation: lp-spin 0.9s linear infinite;"></div>
@@ -140,7 +132,6 @@
                                 </div>
                             </sc-if>
 
-                            <!-- ── DONE ── -->
                             <sc-if value="{{ job.isDone }}" hint-placeholder-val="{{ false }}">
                                 <div style="animation: lp-pop 0.3s ease;">
                                     <!-- success banner -->
@@ -153,7 +144,7 @@
                                             <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #8b8b96;">{{ job.name }} · {{ job.sizeStr }} · {{ job.durationStr }}</div>
                                         </div>
                                     </div>
-                                    <!-- stats -->
+
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(204,204,220,0.09);">
                                         <div style="background: #181b1f; padding: 22px 24px;">
                                             <div style="font-family: 'IBM Plex Mono', monospace; font-size: clamp(26px, 3.5vw, 32px); font-weight: 600; color: #f5f5f8;">{{ job.totalStr }}</div>
@@ -168,7 +159,7 @@
                                             <div style="font-size: 12px; color: #8b8b96; margin-top: 4px;">fehlgeschlagen</div>
                                         </div>
                                     </div>
-                                    <!-- format breakdown -->
+
                                     <div style="padding: 18px 24px; border-top: 1px solid rgba(204,204,220,0.09);">
                                         <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #6e6e7a; margin-bottom: 14px;">Aufschlüsselung nach Format</div>
                                         <div style="display: flex; flex-direction: column; gap: 11px;">
@@ -186,7 +177,7 @@
                                 </div>
                             </sc-if>
 
-                            <!-- ── ERROR ── -->
+
                             <sc-if value="{{ job.isError }}" hint-placeholder-val="{{ false }}">
                                 <div style="display: flex; align-items: flex-start; gap: 12px; padding: 18px 24px;">
                                     <div style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; background: rgba(242,73,92,0.16); display: flex; align-items: center; justify-content: center;">
@@ -203,7 +194,6 @@
                     </sc-for>
                 </div>
 
-                <!-- untere Aktionen -->
                 <div style="display: flex; gap: 12px; margin-top: 20px;">
                     <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}">
                         <a href="{{ dashboardUrl }}" rel="noopener" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; background: #73bf69; color: #0c1c0a; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 3px;" style-hover="background:#84cf78;">
@@ -225,6 +215,10 @@
 
             <input type="file" ref="{{ fileInput }}" accept=".txt,.log" multiple onChange="{{ onFileChange }}" style="display: none;" />
         </main>
+
+        <footer style="width: 100%; max-width: 920px; padding-top: 16px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4a4a56;">
+            LogParser v1.0 · entwickelt von Rafik
+        </footer>
     </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: &quot;100%&quot;, &quot;height&quot;: 720}}">

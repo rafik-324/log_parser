@@ -8,7 +8,12 @@ import io.javalin.http.staticfiles.Location;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class WebServer {
@@ -24,6 +29,24 @@ public class WebServer {
                 ctx.result("OK");
             } catch (Exception e) {
                 ctx.status(500).result(e.getMessage());
+            }
+        });
+
+        app.get("/api/steuerungen", ctx -> {
+            List<String> steuerungen = new ArrayList<>();
+            String sql = "SELECT DISTINCT split_part(payload ->> 'rpMark', '/', 1) AS line " +
+                    "FROM sdxp_log WHERE payload ->> 'rpMark' IS NOT NULL ORDER BY line";
+            try {
+                Connection conn = DbConnection.getConnection();
+                try (PreparedStatement stmt = conn.prepareStatement(sql);
+                     ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        steuerungen.add(rs.getString("line"));
+                    }
+                }
+                ctx.json(steuerungen);
+            } catch (Exception e) {
+                ctx.status(500).json(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unbekannter Fehler"));
             }
         });
 
@@ -43,8 +66,6 @@ public class WebServer {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            // clear=false -> an bestehende Daten anhaengen (Mehrfach-Upload).
-            // Fehlt der Parameter, wird wie bisher vorher geleert (Einzeldatei).
             String clearParam = ctx.formParam("clear");
             boolean clearFirst = (clearParam == null) || "true".equalsIgnoreCase(clearParam);
 

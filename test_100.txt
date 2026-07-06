@@ -1,0 +1,24 @@
+2026-02-20 13:30:55.544 | DEBUG |           mfsBin-SdxpCsDc-PriSet-C02-428 | 4a2886 | SENDF-LOGICAL: {"telNo":2184,"et":"260220_123055.544","src":"MFS","dst":"C02-1","func":"PRISET","luId":"500001351558","preInstrs":[{"rpMark":"C02/WIC/1","dirs":["C02/141/11"]}]} // SdxpSocTelegram:
+2026-02-20 13:30:55.689 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1195,"et":"260220_123056.347","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/77/11","luId":"500001351387","luInfo":{"type":"C2","weight":98},"mfsTime":210,"seq":636} // SdxpSocTelegram:
+2026-02-20 13:30:56.109 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C02(C02-1))-445 |        | RECVF-LOGICAL: {"telNo":670,"et":"260220_123056.262","src":"C02-1","dst":"MFS","func":"RPLEAV","rpMark":"C02/WIC/1","luId":"500001344151","dir":"C02/151/11","exec":"done","diReason":"pre"} // SdxpSocTelegram:
+2026-02-20 13:30:56.118 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1196,"et":"260220_123056.777","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/46/11","luId":"500001347667","mfsTime":9999,"seq":3344} // SdxpSocTelegram:
+2026-02-20 13:30:56.230 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1197,"et":"260220_123056.825","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/167/11","luId":"500001351652","luInfo":{"type":"C1","weight":44},"mfsTime":7313,"seq":7706} // SdxpSocTelegram:
+2026-02-20 13:30:56.367 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C05(C05-1))-402 |        | RECVF-LOGICAL: {"telNo":857,"et":"260220_123056.907","src":"C05-1","dst":"MFS","func":"FILINF","area":"C05_Fill_EmptyBin","avail":true,"cnt":68,"unit":"pcs"} // SdxpSocTelegram:
+2026-02-20 13:30:56.372 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1198,"et":"260220_123057.030","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/44/12","luId":"500001351379","luInfo":{"type":"C3","height":290,"weight":218},"mfsTime":9999,"seq":5098} // SdxpSocTelegram:
+2026-02-20 13:30:56.379 | DEBUG | 1<->PCX-ORDER-START-PRINTER05(9005))-473 |        | RECVF-LOGICAL: TT9001: <?xml version="1.0" encoding="UTF-8"?>
+<life/>
+ // TT9001:
+2026-02-20 13:30:56.391 | DEBUG |      mfsBin-SdxpC01Worker-6-thread-2-387 | ae48cd | SENDF-LOGICAL: {"telNo":7527,"et":"260220_123056.391","src":"MFS","dst":"C01-1","func":"RPIREP","rpMark":"C01/167/11","luId":"500001351652","rpInstr":{"dirs":["C01/167/12"]},"ackSeq":7706} // SdxpSocTelegram:
+2026-02-20 13:30:56.430 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C06(C06-1))-422 |        | RECVF-LOGICAL: {"telNo":9516,"et":"260220_123057.107","src":"C06-1","dst":"MFS","func":"RPLEAV","rpMark":"C06/25/13","luId":"100017307","dir":"C06/37/11","exec":"done","diReason":"jit"} // SdxpSocTelegram:
+2026-02-20 13:30:56.484 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1199,"et":"260220_123057.125","src":"C01-1","dst":"MFS","func":"RPLEAV","rpMark":"C01/167/11","luId":"500001351652","dir":"C01/167/12","exec":"run","diReason":"jit","luInfo":{"type":"C1","weight":44}} // SdxpSocTelegram:
+2026-02-20 13:30:56.517 | DEBUG |           mfsBin-SdxpCsDc-PriSet-C02-428 | b3e859 | SENDF-LOGICAL: {"telNo":2185,"et":"260220_123056.517","src":"MFS","dst":"C02-1","func":"PRISET","luId":"500001351652","preInstrs":[{"rpMark":"C02/WIC/1","dirs":["C02/101/11"]}]} // SdxpSocTelegram:
+2026-02-20 13:30:56.539 | DEBUG | 1<->PCX-ORDER-START-PRINTER03(9003))-463 |        | RECVF-LOGICAL: TT9001: <?xml version="1.0" encoding="UTF-8"?>
+<life/>
+ // TT9001:
+2026-02-20 13:30:56.596 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1200,"et":"260220_123057.222","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/167/11","luId":"500001351653","luInfo":{"type":"C1","weight":44},"mfsTime":4323,"seq":7707} // SdxpSocTelegram:
+2026-02-20 13:30:56.654 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C06(C06-1))-422 |        | RECVF-LOGICAL: {"telNo":9517,"et":"260220_123057.345","src":"C06-1","dst":"MFS","func":"RPINFO","rpMark":"C06/25/13","luId":"100093423","luOri":"1","mfsTime":75,"seq":8687} // SdxpSocTelegram:
+2026-02-20 13:30:56.665 | DEBUG |      mfsBin-SdxpC06Worker-2-thread-3-372 | 4b2c1e | SENDF-LOGICAL: {"telNo":9462,"et":"260220_123056.665","src":"MFS","dst":"C06-1","func":"RPIREP","rpMark":"C06/25/13","luId":"100093423","rpInstr":{"dirs":["C06/25/14"]},"ackSeq":8687} // SdxpSocTelegram:
+2026-02-20 13:30:56.707 | DEBUG | n-WaSocDaemon(SDXP:MFS<->C01(C01-1))-405 |        | RECVF-LOGICAL: {"telNo":1201,"et":"260220_123057.366","src":"C01-1","dst":"MFS","func":"RPINFO","rpMark":"C01/77/11","luId":"500001351387","luInfo":{"type":"C2","weight":98},"mfsTime":210,"seq":636} // SdxpSocTelegram:
+2026-02-20 13:30:56.806 | DEBUG | 1<->PCX-ORDER-START-PRINTER02(9002))-440 |        | RECVF-LOGICAL: TT9001: <?xml version="1.0" encoding="UTF-8"?>
+<life/>
+ // TT9001:

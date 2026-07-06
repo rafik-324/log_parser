@@ -129,8 +129,9 @@ public class SdxpParser {
             insertStmt.setString(4, TextSanitizer.sanitize(entry.empfaenger()));
             insertStmt.setString(5, TextSanitizer.sanitize(entry.richtung()));
 
-            // seq (swq) aus dem JSON extrahieren
             JsonNode payload = entry.payload();
+
+            // seq aus dem JSON extrahieren (eingehende RECVF-Telegramme tragen "seq")
             JsonNode seqNode = payload != null ? payload.get("seq") : null;
             if (seqNode != null && seqNode.isNumber()) {
                 insertStmt.setLong(6, seqNode.asLong());
@@ -138,8 +139,8 @@ public class SdxpParser {
                 insertStmt.setNull(6, Types.BIGINT);
             }
 
-            // ackseq aus dem JSON extrahieren
-            JsonNode ackSeqNode = payload != null ? payload.get("ackseq") : null;
+            // ackSeq aus dem JSON extrahieren (ausgehende SENDF-Antworten tragen "ackSeq" - camelCase!)
+            JsonNode ackSeqNode = payload != null ? payload.get("ackSeq") : null;
             if (ackSeqNode != null && ackSeqNode.isNumber()) {
                 insertStmt.setLong(7, ackSeqNode.asLong());
             } else {

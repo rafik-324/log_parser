@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -100,7 +101,6 @@
             background: #1f2228;
         }
 
-        /* Toolbar unterhalb des Headers */
         .toolbar {
             width: 100%;
             padding: 12px clamp(20px, 4vw, 48px);
@@ -137,6 +137,48 @@
             background: rgba(115,191,105,0.1);
             border-color: rgba(115,191,105,0.35);
             color: #73bf69;
+        }
+
+        .panel-btn.pending {
+            opacity: 0.55;
+        }
+
+        #steuerungWrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #steuerungWrapper.hidden {
+            display: none;
+        }
+
+        .panel-select {
+            padding: 5px 10px;
+            background: #1f2228;
+            border: 1px solid rgba(204,204,220,0.12);
+            border-radius: 3px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: #8b8b96;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .panel-select:hover {
+            border-color: rgba(204,204,220,0.28);
+            color: #ccccdc;
+        }
+
+        .panel-select:focus {
+            outline: none;
+            border-color: rgba(115,191,105,0.35);
+            color: #73bf69;
+        }
+
+        .panel-select:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
         .spacer { flex: 1; }
@@ -251,6 +293,15 @@
         }
 
         .grafana-link:hover { color: #73bf69; }
+
+        .credits {
+            width: 100%;
+            padding: 10px clamp(20px, 4vw, 48px) 16px;
+            text-align: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: #4a4a56;
+        }
     </style>
 </head>
 <body>
@@ -266,7 +317,7 @@
     <div class="header-right">
         <div class="status">
             <div class="status-dot"></div>
-            Grafana verbunden · v2.4
+            verbunden · v2.4
         </div>
         <a href="http://localhost:8080" class="back-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -278,8 +329,18 @@
 </header>
 
 <div class="toolbar">
-    <span class="toolbar-label">Datei</span>
-    <span id="fileNameDisplay" style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#ccccdc;"></span>
+    <span class="toolbar-label">Typ</span>
+    <button class="panel-btn active" data-view="alle"   onclick="setView(this)">Alle</button>
+    <button class="panel-btn" data-view="sdxp"   onclick="setView(this)">SDXP</button>
+    <button class="panel-btn pending" data-view="tt14"   onclick="setView(this)">TT14</button>
+    <button class="panel-btn pending" data-view="tt9001" onclick="setView(this)">TT9001</button>
+
+    <div id="steuerungWrapper" class="hidden">
+        <span class="toolbar-label" style="margin-left: 8px;">Steuerung</span>
+        <select id="steuerungSelect" class="panel-select" onchange="setSteuerung(this.value)">
+        </select>
+    </div>
+
     <div class="spacer"></div>
     <button class="refresh-btn" onclick="reloadFrame()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -300,7 +361,7 @@
         </div>
         <iframe
                 id="grafanaFrame"
-                src="http://localhost:3000/d/logpraser/lager-telegramme?orgId=1&kiosk"
+                src="http://127.0.0.1:3000/d/logpraser/new-dashboard?orgId=1&kiosk=1"
                 onload="frameLoaded()"
                 title="Grafana Dashboard">
         </iframe>
@@ -311,8 +372,22 @@
     <span class="footer-info">LogParser · Lager-Telegramme Dashboard</span>
     <a href="http://localhost:3000" target="_blank" class="grafana-link">Grafana öffnen ↗</a>
 </footer>
+<div class="credits">LogParser v1.0 · entwickelt von rafik</div>
 
 <script>
+    const dashboards = {
+        alle:   'http://127.0.0.1:3000/d/logpraser/new-dashboard?orgId=1&kiosk=1',
+        sdxp:   'http://127.0.0.1:3000/d/logpraser_sdxp/sdxp-dashboard?orgId=1&kiosk=1',
+        tt14:   '',   // TODO: URL des TT14-Dashboards eintragen
+        tt9001: ''    // TODO: URL des TT9001-Dashboards eintragen
+    };
+
+    const viewsWithSteuerung = ['sdxp'];
+
+    let currentView = 'alle';
+    let currentSteuerung = '';
+    let steuerungenLoaded = false;
+
     function frameLoaded() {
         const overlay = document.getElementById('loadingOverlay');
         overlay.classList.add('hidden');
@@ -325,22 +400,90 @@
         frame.src = frame.src;
     }
 
-    // Panel-Buttons aktiv markieren
-    function setView(view) {
+    async function loadSteuerungen() {
+        if (steuerungenLoaded) return;
+        try {
+            const res = await fetch('/api/steuerungen');
+            if (!res.ok) throw new Error('Steuerungen konnten nicht geladen werden');
+            const liste = await res.json();
+
+            const select = document.getElementById('steuerungSelect');
+            liste.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+            steuerungenLoaded = true;
+
+            if (liste.length > 0) {
+                currentSteuerung = liste[0];
+                select.value = liste[0];
+                loadFrame();
+            }
+        } catch (e) {
+            console.error('Konnte Steuerungen nicht laden:', e);
+        }
+    }
+
+    function updateSteuerungVisibility() {
+        const wrapper = document.getElementById('steuerungWrapper');
+        const show = viewsWithSteuerung.includes(currentView);
+
+        if (show) {
+            wrapper.classList.remove('hidden');
+            loadSteuerungen();
+        } else {
+            wrapper.classList.add('hidden');
+            currentSteuerung = '';
+            document.getElementById('steuerungSelect').value = '';
+        }
+    }
+
+    function buildUrl() {
+        const base = dashboards[currentView];
+        if (!base) return null;
+
+        const url = new URL(base);
+        if (currentSteuerung && viewsWithSteuerung.includes(currentView)) {
+            url.searchParams.set('var-steuerung', currentSteuerung);
+        } else {
+            url.searchParams.delete('var-steuerung');
+        }
+        return url.toString();
+    }
+
+
+    function loadFrame() {
+        const url = buildUrl();
+        if (!url) return;
+
+        const frame = document.getElementById('grafanaFrame');
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.classList.remove('hidden');
+        frame.src = url;
+    }
+
+    function setView(btn) {
+        const view = btn.dataset.view;
+        if (!dashboards[view]) return;
+
+        currentView = view;
+
         document.querySelectorAll('.panel-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+        btn.classList.add('active');
 
-        // Hier kannst du später je nach View verschiedene Grafana-URLs laden
-        // z.B. mit ?var-format=SDXP als Query-Parameter wenn du Grafana-Variablen nutzt
+        updateSteuerungVisibility();
+        loadFrame();
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const fileName = params.get('file');
-    if (fileName) {
-        document.getElementById('fileNameDisplay').textContent = fileName;
+    function setSteuerung(value) {
+        currentSteuerung = value;
+        loadFrame();
     }
 
+    // Initialzustand beim Laden der Seite (View = "alle" -> Dropdown bleibt versteckt)
+    updateSteuerungVisibility();
 </script>
-
 </body>
 </html>
