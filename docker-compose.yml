@@ -47,7 +47,7 @@ services:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_NAME: "Main Org."
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
-      GF_AUTH_DISABLE_LOGIN_FORM: "false" #aktivieren un deaktiver des Logins
+      GF_AUTH_DISABLE_LOGIN_FORM: "true" #aktivieren un deaktiver des Logins
       GF_SECURITY_ALLOW_EMBEDDING: "true"
       GF_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/provisioning/dashboards/dashboard.json"
 

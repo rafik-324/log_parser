@@ -874,7 +874,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n    line                                 AS \"Steuerung\",\r\n    round(avg(response_ms)::numeric, 1)  AS \"Ø Antwortzeit (ms)\"\r\nFROM sdxp_response_times\r\nGROUP BY line\r\nORDER BY line;",
+          "rawSql": "SELECT\r\n    line                                  AS \"Steuerung\",\r\n    round(avg(response_ms)::numeric, 1)   AS \"Ø Antwortzeit (ms)\"\r\nFROM sdxp_response_times\r\nWHERE line IS NOT NULL AND line != ''\r\nGROUP BY line\r\nORDER BY line;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1443,6 +1443,6 @@
   "timezone": "browser",
   "title": "sdxp_dashboard",
   "uid": "logpraser_sdxp",
-  "version": 9,
+  "version": 12,
   "weekStart": ""
 }
