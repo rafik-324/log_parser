@@ -14,7 +14,7 @@ Parst Log-Dateien verschiedener Fördertechnik-/MFS-Protokolle (SDXP, TT14XX, TT
    ```bash
    git clone https://github.com/rafik-324/log_parser 
    cd log_praser
-   ```
+   ```werwise 
 
 2. `.env` Datei anlegen
 
@@ -80,6 +80,12 @@ Für Anpassungen an den Dashboards oder zum Einsehen der Logik `GF_AUTH_DISABLE_
 | Log-Zeile wird nicht geparst | Format entspricht keinem der unterstützten Parser — Eintrag landet in `ErrorRepository`, dort nachschauen |
 | Login für Grafana funktioniert nicht | Browser-Cookies löschen und `docker compose up --build` |
 
+## Berechnungen & Kennzahlen
+
+Eine ausführliche Erklärung der berechneten Kennzahlen (SDXP-Antwortzeit,
+Ausreißer-Erkennung) und der zugrunde liegenden Design-Entscheidungen steht in
+[`docs/CALCULATIONS.md`](docs/CALCULATIONS.md).
+
 ## Projektstruktur
 
 ```
@@ -119,6 +125,8 @@ log_praser/
 │               ├── dashboard.html
 │               ├── index.html
 │               └── support.js
+├──docs/
+│  └──CALCULATIONS.md
 ├── .env (!!anlegen!!)
 ├── .gitignore
 ├── docker-compose.yml
