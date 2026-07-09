@@ -12,6 +12,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Parst TT14-Zeilen für die Subtypen {@code TT1411} und {@code TT1434} und schreibt
+ * sie gebatcht in {@code tt14_log}. Der jeweilige Subtyp wird an
+ * {@link #parseLine(String, String)} / {@link #insert(LogEntry, String)} übergeben
+ * und steuert die Parsing-Regeln.
+ */
 public class TT14Parser {
 
     private static final DateTimeFormatter TS_FORMAT =
@@ -31,6 +37,18 @@ public class TT14Parser {
     private static final Pattern TT1434_HEADER_PATTERN =
             Pattern.compile("^(\\w+)\\((\\d+)\\s*->\\s*(\\d+)\\)(.*)$", Pattern.DOTALL);
 
+    /**
+     * Parst eine TT14-Zeile abhängig vom {@code subtype}.
+     * <p>
+     * Nach der Richtungsangabe wird ab dem ersten {@code :} abgeschnitten; der Rest
+     * wird für {@code TT1411} als {@code typ(sender->empfaenger) #..: payload}, sonst
+     * ({@code TT1434}) als {@code TYP(sender->empfaenger) payload} zerlegt. Bei TT1411
+     * ist der Payload optional (dann {@code null}).
+     *
+     * @param subtype {@code "TT1411"}, alles andere wird als {@code TT1434} behandelt
+     * @throws IllegalArgumentException bei fehlendem {@code |}, fehlender Richtung
+     *         oder nicht erkennbarem Header
+     */
     public LogEntry parseLine(String line, String subtype) {
         if (line == null || line.isBlank()) {
             throw new IllegalArgumentException("Leere Zeile");
@@ -45,6 +63,7 @@ public class TT14Parser {
         Matcher d = DIRECTION_PATTERN.matcher(line);
         String richtung = null;
         int directionEnd = -1;
+        // letzte Richtungsangabe gewinnt (frühere Treffer können in Präfix-Feldern stehen)
         while (d.find()) {
             richtung = d.group(1);
             directionEnd = d.end();
