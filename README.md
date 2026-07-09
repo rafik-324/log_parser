@@ -83,29 +83,49 @@ Für Anpassungen an den Dashboards oder zum Einsehen der Logik `GF_AUTH_DISABLE_
 ## Projektstruktur
 
 ```
-db/
-  init/
-    01_schema.sql       → Tabellen, Views, Berechnungslogik (kommentiert)
-grafana/
-  provisioning/
-    dashboards/         → dashboard.yml + exportierte Dashboard-JSONs
-    datasources/        → datasource.yml
-src/main/java/app/
-  Main                  → Einstiegspunkt
-  WebServer             → Javalin-Server, Endpunkte
-  LogProcessor          → orchestriert Parsing
-  ProcessingResult      → Ergebnis-Objekt eines Parse-Durchlaufs
-  dbconnection/
-    DbConnection
-  parser/
-    ErrorRepository     → Sammelt/loggt nicht parsbare Zeilen
-    TextSanitizer       → Vorverarbeitung der Log-Zeilen
-    SdxpParser, TT14Parser, TT1411Parser, TT1434Parser, TT9001Parser
-    model/
-      LogEntry          → Datenmodell einer geparsten Zeile
-docker-compose.yml
-Dockerfile
-pom.xml
+log_praser/
+├── .idea/
+├── db/
+│   └── init/
+│       └── 01_schema.sql
+├── grafana/
+│   └── provisioning/
+│       ├── dashboards/
+│       │   ├── dashboard.yml
+│       │   ├── log_dahboard.json
+│       │   └── sdxp_dashboard.json
+│       └── datasources/
+│           └── datasource.yml
+├── src/
+│   └── main/
+│       ├── java/
+│       │   ├── app/
+│       │   │   ├── LogProcessor.java
+│       │   │   ├── Main.java
+│       │   │   ├── ProcessingResult.java
+│       │   │   └── WebServer.java
+│       │   ├── dbconnection/
+│       │   │   └── DbConnection.java
+│       │   └── parser/
+│       │       ├── model/
+│       │       │   └── LogEntry.java
+│       │       ├── ErrorRepository.java
+│       │       ├── SdxpParser.java
+│       │       ├── TextSanitizer.java
+│       │       ├── TT14Parser.java
+│       │       └── TT9001Parser.java
+│       └── resources/
+│           └── public/
+│               ├── dashboard.html
+│               ├── index.html
+│               └── support.js
+├── .env (!!anlegen!!)
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── mfsBin_socTelegramStripeField.log (Testdata)
+├── pom.xml
+└── README.md
 ```
 
 ## Dev
