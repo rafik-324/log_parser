@@ -16,7 +16,18 @@ Parst Log-Dateien verschiedener Fördertechnik-/MFS-Protokolle (SDXP, TT14XX, TT
    cd log_praser
    ``` 
 
-2. `.env` Datei anlegen
+2. `.env` Datei im Projektverzeichnis anlegen (Werte frei wählbar, sie legen die lokalen Zugangsdaten beim ersten Start fest):
+
+   ```env
+   POSTGRES_USER=logparser
+   POSTGRES_PASSWORD=logparserpw
+
+   GF_SECURITY_ADMIN_USER=admin
+   GF_SECURITY_ADMIN_PASSWORD=admin
+   ```
+
+   - `POSTGRES_USER` / `POSTGRES_PASSWORD` — Zugangsdaten der PostgreSQL-Datenbank (wird beim ersten Start damit initialisiert)
+   - `GF_SECURITY_ADMIN_USER` / `GF_SECURITY_ADMIN_PASSWORD` — Admin-Login für Grafana
 
 3. Container starten
 
