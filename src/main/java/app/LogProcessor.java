@@ -15,6 +15,21 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Verarbeitet Log-Dateien: liest die Datei zeilenweise ein, zerlegt sie anhand
+ * der Zeitstempel in einzelne Blöcke und leitet jeden Block abhängig vom
+ * erkannten Typ (SDXP, TT9001, TT1411, TT1434) an den passenden Parser weiter.
+ *
+ * <p>Die Verarbeitung läuft als eine einzige Transaktion: Nach dem erfolgreichen
+ * Durchlauf werden alle Parser geflusht und die Änderungen committet; tritt ein
+ * Fehler auf, wird die gesamte Transaktion zurückgerollt. Fehlerhafte Einzelblöcke
+ * werden abgefangen, protokolliert und über das {@link ErrorRepository} gespeichert,
+ * ohne den restlichen Durchlauf abzubrechen.</p>
+ *
+ * <p>Optional können vor dem Import alle Log-Tabellen geleert werden. Das Ergebnis
+ * eines Laufs wird als {@link ProcessingResult} mit Gesamt-, Erfolgs- und
+ * Fehlerzahlen sowie einer Aufschlüsselung je Typ zurückgegeben.</p>
+ */
 public class LogProcessor {
 
     private static final Pattern TIMESTAMP_START_PATTERN =
@@ -31,11 +46,36 @@ public class LogProcessor {
     private static final TT9001Parser    tt9001Parser    = new TT9001Parser();
     private static final ErrorRepository errorRepository = new ErrorRepository();
 
+    /**
+     * Verarbeitet eine Log-Datei und leert dabei vorab alle Log-Tabellen.
+     * Komfort-Überladung von {@link #process(Path, boolean)} mit
+     * {@code clearFirst = true} (Verhalten für den Einzeldatei-Import).
+     *
+     * @param pfad Pfad zur einzulesenden Log-Datei
+     * @return das {@link ProcessingResult} mit Gesamt-, Erfolgs- und Fehlerzahlen
+     * @throws IOException  bei einem Fehler beim Lesen der Datei
+     * @throws SQLException bei einem Fehler während der Datenbankverarbeitung
+     */
     public static synchronized ProcessingResult process(Path pfad) throws IOException, SQLException {
         // Standard: einzelne Datei -> vorher leeren (Rückwärtskompatibilität)
         return process(pfad, true);
     }
 
+    /**
+     * Verarbeitet eine Log-Datei in einer einzigen Transaktion: Die Datei wird
+     * zeilenweise eingelesen, anhand der Zeitstempel in Blöcke zerlegt und jeder
+     * Block je nach erkanntem Typ an den passenden Parser weitergeleitet. Nach
+     * erfolgreichem Durchlauf wird committet, im Fehlerfall komplett zurückgerollt.
+     * Fehlerhafte Einzelblöcke brechen den Lauf nicht ab, sondern werden im
+     * {@code error_log} gespeichert und als fehlgeschlagen gezählt.
+     *
+     * @param pfad       Pfad zur einzulesenden Log-Datei
+     * @param clearFirst wenn {@code true}, werden vor dem Import alle Log-Tabellen geleert
+     * @return das {@link ProcessingResult} mit Gesamt-, Erfolgs- und Fehlerzahlen
+     *         sowie einer Aufschlüsselung je Log-Typ
+     * @throws IOException  bei einem Fehler beim Lesen der Datei
+     * @throws SQLException bei einem Fehler während der Datenbankverarbeitung
+     */
     public static synchronized ProcessingResult process(Path pfad, boolean clearFirst)
             throws IOException, SQLException {
         try {

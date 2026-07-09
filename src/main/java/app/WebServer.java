@@ -16,6 +16,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Startet einen Javalin-Webserver auf Port 8080, der den LogParser als
+ * Web-Anwendung bereitstellt: Er liefert statische Dateien (u. a. das
+ * Dashboard) aus, nimmt Log-Dateien per Upload entgegen und übergibt sie an
+ * den {@link LogProcessor}, und stellt REST-Endpunkte zum Leeren der
+ * Datenbank sowie zum Abfragen der vorhandenen Steuerungen bereit. Beim
+ * Herunterfahren wird die Datenbankverbindung über einen Shutdown-Hook
+ * sauber geschlossen.
+ */
+
 public class WebServer {
 
     public static void main(String[] args) {
