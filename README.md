@@ -14,7 +14,7 @@ Parst Log-Dateien verschiedener Fördertechnik-/MFS-Protokolle (SDXP, TT14XX, TT
    ```bash
    git clone https://github.com/rafik-324/log_parser 
    cd log_praser
-   ```werwise 
+   ``` 
 
 2. `.env` Datei anlegen
 
