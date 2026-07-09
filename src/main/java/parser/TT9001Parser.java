@@ -193,5 +193,5 @@ public class TT9001Parser {
             throw new RuntimeException("Flush von tt9001_log fehlgeschlagen", e);
         }
     }
-    
+
 }
