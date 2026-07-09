@@ -5,7 +5,7 @@ Parst Log-Dateien verschiedener Fördertechnik-/MFS-Protokolle (SDXP, TT14XX, TT
 ## Voraussetzungen
 
 - Docker
-- Java 21 und Maven (falls lokal gebaut wird)
+- Java 21 und Maven (falls ohne Docker gebaut wird)
 
 ## Installation
 
