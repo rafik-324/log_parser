@@ -39,6 +39,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "ges. SDXP Logs",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -133,7 +134,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SENDF/ RECVF Verteilung in %",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -221,7 +222,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SENDF/ RECVF Verteilung in %",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -309,6 +310,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Telegramme aufgeschlüsselt nach Steuerung",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -435,7 +437,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "Telegramm-Durchsatz über die Zeit in 30-Sekunden-Fenstern, aufgeschlüsselt nach Typ (SDXP, TT14, TT9001).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -618,7 +620,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SDXP-Telegrammaufkommen je Steuerung über die Zeit (30-Sekunden-Fenster); jedes Telegramm zählt für Sender und Empfänger, MFS ausgeschlossen",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -814,6 +816,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Durchschnittliche MFS-Antwortzeit (ms) je Steuerung. Quelle: View sdxp_response_times.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -903,6 +906,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Einzelne Antwortzeiten der gewählten Steuerung ($steuerung) im Zeitverlauf, mit Gesamt-Durchschnitt als Referenzlinie. Quelle: View sdxp_response_times.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1015,6 +1019,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Zeigt die Anz. der gesamt identifizierten Ausreiser an",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1095,6 +1100,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Zeigt die gesamt identifizierten Ausreiser an",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1443,6 +1449,6 @@
   "timezone": "browser",
   "title": "sdxp_dashboard",
   "uid": "logpraser_sdxp",
-  "version": 12,
+  "version": 13,
   "weekStart": ""
 }

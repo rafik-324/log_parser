@@ -39,6 +39,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Gesamte Logs aller Tabellen",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -120,6 +121,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Gesamt Logs pro Format",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -247,6 +249,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Verteilung der Formate",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -436,7 +439,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SENDF/ RECVF Verhältniss ges. in %",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -524,7 +527,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SENDF/ RECVF Verhältniss ges.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -612,7 +615,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SENDF/ RECVF Verhältniss SDXP ges.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -720,7 +723,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SENDF/ RECVF Verhältniss TT9001 ges.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -832,7 +835,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SENDF/ RECVF Verhältniss TT14 ges.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -957,6 +960,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Anzahl SDXP Telegramme pro Steuerung",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1070,6 +1074,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
+      "description": "Anzahl TT14 Telegramme pro Steuerung",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1175,7 +1180,7 @@
           }
         }
       ],
-      "title": "TT1411 Empfänger",
+      "title": "TT14 Empfänger",
       "type": "barchart"
     },
     {
@@ -1196,7 +1201,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "Telegramm-Durchsatz über die Zeit in 30-Sekunden-Fenstern, aufgeschlüsselt nach Typ (SDXP, TT14, TT9001). Quelle: alle drei Log-Tabellen per UNION",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1379,7 +1384,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "SDXP-Telegrammaufkommen je Steuerung über die Zeit (30-Sekunden-Fenster); jedes Telegramm zählt für Sender und Empfänger, MFS ausgeschlossen",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1562,7 +1567,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "cfqky58pk7i80d"
       },
-      "description": "",
+      "description": "TT14-Telegrammaufkommen je Steuerung über die Zeit (30-Sekunden-Fenster); jedes Telegramm zählt für Sender und Empfänger, MFS ausgeschlossen",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1741,7 +1746,7 @@
       "type": "timeseries"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1749,184 +1754,187 @@
         "y": 45
       },
       "id": 18,
-      "panels": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "cfqky58pk7i80d"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "max": 250,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "super-light-blue"
-                  },
-                  {
-                    "color": "blue",
-                    "value": 80
-                  },
-                  {
-                    "color": "semi-dark-red",
-                    "value": 125
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 5,
-            "w": 4,
-            "x": 0,
-            "y": 86
-          },
-          "id": 19,
-          "options": {
-            "minVizHeight": 75,
-            "minVizWidth": 75,
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": false,
-            "showThresholdMarkers": true,
-            "sizing": "auto"
-          },
-          "pluginVersion": "11.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "cfqky58pk7i80d"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "SELECT COUNT(*) AS fehler_anzahl\r\nFROM error_log;",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "Anz. Fehlerhaft",
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "cfqky58pk7i80d"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 5,
-            "w": 20,
-            "x": 4,
-            "y": 86
-          },
-          "id": 20,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true
-          },
-          "pluginVersion": "11.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "grafana-postgresql-datasource",
-                "uid": "cfqky58pk7i80d"
-              },
-              "editorMode": "code",
-              "format": "table",
-              "rawQuery": true,
-              "rawSql": "SELECT * FROM error_log;",
-              "refId": "A",
-              "sql": {
-                "columns": [
-                  {
-                    "parameters": [],
-                    "type": "function"
-                  }
-                ],
-                "groupBy": [
-                  {
-                    "property": {
-                      "type": "string"
-                    },
-                    "type": "groupBy"
-                  }
-                ],
-                "limit": 50
-              }
-            }
-          ],
-          "title": "Fehlerhaft",
-          "type": "table"
-        }
-      ],
+      "panels": [],
       "title": "Error",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "cfqky58pk7i80d"
+      },
+      "description": "Zeigt die Fehler ges.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 250,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "super-light-blue",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 80
+              },
+              {
+                "color": "semi-dark-red",
+                "value": 125
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 46
+      },
+      "id": 19,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cfqky58pk7i80d"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS fehler_anzahl\r\nFROM error_log;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Anz. Fehlerhaft",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "cfqky58pk7i80d"
+      },
+      "description": "Liste aller Fehlerhaften Logs",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 20,
+        "x": 4,
+        "y": 46
+      },
+      "id": 20,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "cfqky58pk7i80d"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT * FROM error_log;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Fehlerhaft",
+      "type": "table"
     }
   ],
   "refresh": "",
@@ -1974,14 +1982,14 @@
     ]
   },
   "time": {
-    "from": "2026-02-20T13:30:47.562Z",
-    "to": "2026-02-20T13:55:47.505Z"
+    "from": "2026-02-20T13:45:27.093Z",
+    "to": "2026-02-20T13:45:27.093Z"
   },
   "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
   "timezone": "browser",
   "title": "New dashboard",
   "uid": "logpraser",
-  "version": 12,
+  "version": 14,
   "weekStart": ""
 }
