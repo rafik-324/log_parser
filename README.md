@@ -16,7 +16,7 @@ Parst Log-Dateien verschiedener Fördertechnik-/MFS-Protokolle (SDXP, TT14XX, TT
    cd log_praser
    ``` 
 
-2. `.env` Datei im Projektverzeichnis anlegen (Werte frei wählbar, sie legen die lokalen Zugangsdaten beim ersten Start fest):
+2. `.env` Datei im Projektverzeichnis anlegen:
 
    ```env
    POSTGRES_USER=logparser
